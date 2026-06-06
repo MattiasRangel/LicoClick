@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lico-Click POS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="dark-mode">
+
+    <!-- PANTALLA PRINCIPAL: TABLERO POS -->
+    <div id="pos-screen">
+
+        <!-- Header -->
+        <header class="main-header">
+            <button class="btn-menu" onclick="toggleMenu()" aria-label="Menú">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="user-info">
+                <div class="user-avatar-circle">👤</div>
+                <div class="user-text">
+                    <span id="active-user-name" class="user-name">Cajero Activo</span>
+                    <span id="active-user-role" class="user-role">Rol</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Carrito -->
+        <section class="cart-section">
+            <div class="section-title">
+                <span class="section-dot"></span>
+                Pedido Actual
+            </div>
+            <div id="cart-container" class="cart-container">
+                <div class="empty-cart-msg">El pedido está vacío · toca un producto abajo</div>
+            </div>
+        </section>
+
+        <!-- Grilla de Productos -->
+        <main class="products-section">
+            <div class="section-title">
+                <span class="section-dot"></span>
+                Productos disponibles
+            </div>
+            <div class="grid-container">
+
+                <!-- BOTÓN PERSONALIZADO -->
+                <div class="product-card card-custom-item">
+                    <div class="custom-header-label">✏️ Venta Manual</div>
+                    <div class="no-img-layout">
+                        <input type="text" id="custom-name-input" class="custom-input-field name-field"
+                            value="Venta Manual" placeholder="Ej: Hielo, Vasos...">
+                        <div class="custom-price-field">
+                            <label for="custom-price-input">Precio $</label>
+                            <input type="number" id="custom-price-input" class="custom-input-field price-field"
+                                value="10000" min="500" step="500">
+                        </div>
+                        <button class="btn-add-custom" onclick="addCustomProduct()">+ Agregar al pedido</button>
+                    </div>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('custom', -1)">−</button>
+                        <input type="number" id="qty-custom" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('custom', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Botella de Agua -->
+                <div class="product-card">
+                    <button class="product-main-btn" onclick="addProductFromCard('agua_botella')">
+                        <div class="img-container"><img src="imagenes/agua.png" alt="Agua Botella" onerror="this.parentNode.innerHTML='💧'"></div>
+                        <span class="product-title">Botella de Agua</span>
+                        <span class="product-price">$2.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('agua_botella', -1)">−</button>
+                        <input type="number" id="qty-agua_botella" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('agua_botella', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Agua con Gas -->
+                <div class="product-card">
+                    <button class="product-main-btn" onclick="addProductFromCard('agua_gas')">
+                        <div class="img-container"><img src="imagenes/aguacongas.png" alt="Agua con Gas" onerror="this.parentNode.innerHTML='🫧'"></div>
+                        <span class="product-title">Agua con Gas</span>
+                        <span class="product-price">$3.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('agua_gas', -1)">−</button>
+                        <input type="number" id="qty-agua_gas" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('agua_gas', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Águila Botella -->
+                <div class="product-card card-aguila" id="card-aguila_botella">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('aguila_botella','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('aguila_botella','half',this)">7</button>
+                        <button class="fmt-tab" onclick="setFmt('aguila_botella','box',this)">13</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('aguila_botella')">
+                        <div class="img-container" id="img-aguila_botella"><img src="imagenes/aguila.png" alt="Águila Botella" onerror="this.parentNode.innerHTML='🍺'"></div>
+                        <span class="product-title">Águila Botella</span>
+                        <span class="product-price" id="price-label-aguila_botella">$7.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('aguila_botella', -1)">−</button>
+                        <input type="number" id="qty-aguila_botella" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('aguila_botella', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Póker Botella 1000ml -->
+                <div class="product-card card-poker" id="card-poker_1000">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('poker_1000','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('poker_1000','half',this)">7</button>
+                        <button class="fmt-tab" onclick="setFmt('poker_1000','box',this)">13</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('poker_1000')">
+                        <div class="img-container" id="img-poker_1000"><img src="imagenes/poker.png" alt="Póker 1000ml" onerror="this.parentNode.innerHTML='🍺'"></div>
+                        <span class="product-title">Póker 1000ml</span>
+                        <span class="product-price" id="price-label-poker_1000">$7.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('poker_1000', -1)">−</button>
+                        <input type="number" id="qty-poker_1000" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('poker_1000', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Águila Light Botella -->
+                <div class="product-card card-aguila">
+                    <button class="product-main-btn" onclick="addProductFromCard('aguila_light_botella')">
+                        <div class="img-container"><img src="imagenes/aguilalight.png" alt="Águila Light Botella" onerror="this.parentNode.innerHTML='🍺'"></div>
+                        <span class="product-title">Águila Light Bot.</span>
+                        <span class="product-price">$7.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('aguila_light_botella', -1)">−</button>
+                        <input type="number" id="qty-aguila_light_botella" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('aguila_light_botella', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Águila Light Lata -->
+                <div class="product-card card-aguila" id="card-aguila_light_lata">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('aguila_light_lata','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('aguila_light_lata','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('aguila_light_lata','tray',this)">24</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('aguila_light_lata')">
+                        <div class="img-container" id="img-aguila_light_lata"><img src="imagenes/light lata.png" alt="Águila Light Lata" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="product-title">Águila Light Lata</span>
+                        <span class="product-price" id="price-label-aguila_light_lata">$3.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('aguila_light_lata', -1)">−</button>
+                        <input type="number" id="qty-aguila_light_lata" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('aguila_light_lata', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Aguilita -->
+                <div class="product-card card-aguila" id="card-aguilita">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('aguilita','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('aguilita','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('aguilita','tray',this)">24</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('aguilita')">
+                        <div class="img-container" id="img-aguilita"><img src="imagenes/aguilita.png" alt="Aguilita" onerror="this.parentNode.innerHTML='🍺'"></div>
+                        <span class="product-title">Aguilita</span>
+                        <span class="product-price" id="price-label-aguilita">$3.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('aguilita', -1)">−</button>
+                        <input type="number" id="qty-aguilita" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('aguilita', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Águila Lata Gorda -->
+                <div class="product-card card-aguila" id="card-aguila_lata_gorda">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('aguila_lata_gorda','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('aguila_lata_gorda','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('aguila_lata_gorda','tray',this)">24</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('aguila_lata_gorda')">
+                        <div class="img-container" id="img-aguila_lata_gorda"><img src="imagenes/aguilalata.png" alt="Águila Lata Gorda" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="product-title">Águila Lata Gorda</span>
+                        <span class="product-price" id="price-label-aguila_lata_gorda">$4.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('aguila_lata_gorda', -1)">−</button>
+                        <input type="number" id="qty-aguila_lata_gorda" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('aguila_lata_gorda', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Póker Lata Gorda -->
+                <div class="product-card card-poker" id="card-poker_lata_gorda">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('poker_lata_gorda','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('poker_lata_gorda','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('poker_lata_gorda','tray',this)">24</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('poker_lata_gorda')">
+                        <div class="img-container" id="img-poker_lata_gorda"><img src="imagenes/pokerLata.png" alt="Póker Lata Gorda" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="product-title">Póker Lata Gorda</span>
+                        <span class="product-price" id="price-label-poker_lata_gorda">$4.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('poker_lata_gorda', -1)">−</button>
+                        <input type="number" id="qty-poker_lata_gorda" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('poker_lata_gorda', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Amper -->
+                <div class="product-card">
+                    <button class="product-main-btn" onclick="addProductFromCard('amper')">
+                        <div class="img-container"><img src="imagenes/amper.png" alt="Amper" onerror="this.parentNode.innerHTML='⚡'"></div>
+                        <span class="product-title">Amper</span>
+                        <span class="product-price">$4.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('amper', -1)">−</button>
+                        <input type="number" id="qty-amper" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('amper', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Bretaña -->
+                <div class="product-card">
+                    <button class="product-main-btn" onclick="addProductFromCard('bretana')">
+                        <div class="img-container"><img src="imagenes/bretaña.png" alt="Bretaña" onerror="this.parentNode.innerHTML='🍺'"></div>
+                        <span class="product-title">Bretaña</span>
+                        <span class="product-price">$3.500</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('bretana', -1)">−</button>
+                        <input type="number" id="qty-bretana" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('bretana', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Lata Club Colombia -->
+                <div class="product-card card-club" id="card-lata_club_colombia">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('lata_club_colombia','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('lata_club_colombia','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('lata_club_colombia','tray',this)">24</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('lata_club_colombia')">
+                        <div class="img-container" id="img-lata_club_colombia"><img src="imagenes/club colombia.png" alt="Club Colombia" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="product-title">Lata Club Colombia</span>
+                        <span class="product-price" id="price-label-lata_club_colombia">$3.500</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('lata_club_colombia', -1)">−</button>
+                        <input type="number" id="qty-lata_club_colombia" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('lata_club_colombia', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Lata Cola y Pola -->
+                <div class="product-card card-cola-pola">
+                    <button class="product-main-btn" onclick="addProductFromCard('lata_cola_pola')">
+                        <div class="img-container"><img src="imagenes/colaypola.png" alt="Cola y Pola" onerror="this.parentNode.innerHTML='🥤'"></div>
+                        <span class="product-title">Lata Cola y Pola</span>
+                        <span class="product-price">$4.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('lata_cola_pola', -1)">−</button>
+                        <input type="number" id="qty-lata_cola_pola" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('lata_cola_pola', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Coronita -->
+                <div class="product-card card-corona" id="card-coronita">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('coronita','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('coronita','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('coronita','tray',this)">24</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('coronita')">
+                        <div class="img-container" id="img-coronita"><img src="imagenes/coronita.png" alt="Coronita" onerror="this.parentNode.innerHTML='🍺'"></div>
+                        <span class="product-title">Coronita</span>
+                        <span class="product-price" id="price-label-coronita">$4.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('coronita', -1)">−</button>
+                        <input type="number" id="qty-coronita" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('coronita', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Costeña Botella -->
+                <div class="product-card card-costena">
+                    <button class="product-main-btn" onclick="addProductFromCard('costena_botella')">
+                        <div class="img-container"><img src="imagenes/costeña.png" alt="Costeña" onerror="this.parentNode.innerHTML='🍺'"></div>
+                        <span class="product-title">Costeña Botella</span>
+                        <span class="product-price">$5.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('costena_botella', -1)">−</button>
+                        <input type="number" id="qty-costena_botella" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('costena_botella', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Media de Ron -->
+                <div class="product-card card-ron">
+                    <button class="product-main-btn" onclick="addProductFromCard('media_ron')">
+                        <div class="img-container"><img src="imagenes/mediaron.png" alt="Media de Ron" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="product-title">Media de Ron</span>
+                        <span class="product-price">$35.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('media_ron', -1)">−</button>
+                        <input type="number" id="qty-media_ron" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('media_ron', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Sporade -->
+                <div class="product-card">
+                    <button class="product-main-btn" onclick="addProductFromCard('sporade')">
+                        <div class="img-container"><img src="imagenes/sporade.png" alt="Sporade" onerror="this.parentNode.innerHTML='🥤'"></div>
+                        <span class="product-title">Sporade</span>
+                        <span class="product-price">$3.500</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('sporade', -1)">−</button>
+                        <input type="number" id="qty-sporade" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('sporade', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Vive100 -->
+                <div class="product-card">
+                    <button class="product-main-btn" onclick="addProductFromCard('vive100')">
+                        <div class="img-container"><img src="imagenes/vive100.png" alt="Vive100" onerror="this.parentNode.innerHTML='⚡'"></div>
+                        <span class="product-title">Vive100</span>
+                        <span class="product-price">$4.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('vive100', -1)">−</button>
+                        <input type="number" id="qty-vive100" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('vive100', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Budweiser Lata -->
+                <div class="product-card card-bud" id="card-budweiser_lata">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('budweiser_lata','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('budweiser_lata','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('budweiser_lata','tray',this)">24</button>
+                    </div>
+                    <button class="product-main-btn" onclick="addProductFromCard('budweiser_lata')">
+                        <div class="img-container" id="img-budweiser_lata"><img src="imagenes/latabudweiser.png" alt="Budweiser Lata" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="product-title">Budweiser Lata</span>
+                        <span class="product-price" id="price-label-budweiser_lata">$3.500</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('budweiser_lata', -1)">−</button>
+                        <input type="number" id="qty-budweiser_lata" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('budweiser_lata', 1)">+</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Footer fijo -->
+        <footer class="sticky-footer">
+            <div class="total-bar">
+                <span class="total-label">Total del pedido</span>
+                <span id="cart-total-value" class="total-value">$0</span>
+                <button class="btn-sacar-caja" onclick="abrirModalSacarCaja()" title="Sacar dinero de la caja">
+                    💸 Sacar
+                </button>
+            </div>
+            <div class="footer-btns">
+                <button class="btn-cierre-trigger-alt" onclick="window.location.href='resumen.html'">
+                    📊 Resumen / Cierre
+                </button>
+                <button class="btn-checkout" onclick="processCheckout()">
+                    ✅ Registrar Venta
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL: SACAR DINERO DE CAJA -->
+    <div id="modal-sacar-caja" class="modal-overlay" onclick="if(event.target===this)cerrarModalSacarCaja()">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span class="modal-icon">💸</span>
+                <h3>Sacar Dinero de Caja</h3>
+            </div>
+            <p class="modal-hint">Registra el dinero que salió de la caja (almuerzo, cena, compras, etc.)</p>
+            <div class="modal-field">
+                <label>Monto a retirar</label>
+                <div class="modal-input-wrap">
+                    <span class="modal-prefix">$</span>
+                    <input type="number" id="input-sacar-monto" placeholder="Ej: 15000" min="500" step="500">
+                </div>
+            </div>
+            <div class="modal-field">
+                <label>Motivo (opcional)</label>
+                <input type="text" id="input-sacar-motivo" class="modal-text-input" placeholder="Ej: Almuerzo cajero, Compra cerveza...">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn-cancel" onclick="cerrarModalSacarCaja()">Cancelar</button>
+                <button class="modal-btn-confirm" onclick="confirmarSacarCaja()">💸 Registrar Retiro</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FORMATO DE VENTA (sixpack / bandeja / media caja / caja) -->
+    <div id="modal-formato" class="modal-overlay" onclick="if(event.target===this)cerrarModalFormato()">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span class="modal-icon" id="fmt-modal-icon">📦</span>
+                <h3 id="fmt-modal-title">Precio del paquete</h3>
+            </div>
+            <p class="modal-hint" id="fmt-modal-hint">Define el precio para este formato. Dejar vacío = precio por unidad × cantidad.</p>
+            <div class="modal-field">
+                <label id="fmt-modal-label">Precio del paquete</label>
+                <div class="modal-input-wrap">
+                    <span class="modal-prefix">$</span>
+                    <input type="number" id="input-fmt-precio" placeholder="Opcional..." min="0" step="500">
+                </div>
+                <p class="modal-subhint" id="fmt-precio-defecto"></p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn-cancel" onclick="cerrarModalFormato()">Cancelar</button>
+                <button class="modal-btn-confirm" onclick="aplicarFormato()">✅ Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+<!-- =====================================================
+     MENÚ LATERAL — FUERA de #pos-screen para que el
+     z-index funcione correctamente en móvil
+     ===================================================== -->
+<div class="menu-overlay" id="menu-overlay" onclick="closeMenu()"></div>
+<nav class="side-menu" id="side-menu">
+    <div class="side-menu-brand">
+        <div class="brand-name">Lico<span style="color:var(--green)">Click</span></div>
+        <p>LAS PALMAS</p>
+    </div>
+    <a class="menu-item active" href="index.html" onclick="closeMenu()">
+        <span class="menu-icon">🛒</span> Punto de Venta
+    </a>
+    <a class="menu-item" href="fiados.html" onclick="closeMenu()">
+        <span class="menu-icon">📒</span> Cuentas / Fiados
+    </a>
+    <a class="menu-item" href="resumen.html" onclick="closeMenu()">
+        <span class="menu-icon">📊</span> Resumen del Turno
+    </a>
+    <div class="menu-spacer"></div>
+    <div class="menu-divider"></div>
+    <button class="btn-menu-logout" onclick="handleLogout()">
+        <span>🚪</span> Cerrar Sesión
+    </button>
+</nav>
+
+    <script src="script.js"></script>
+</body>
+</html>

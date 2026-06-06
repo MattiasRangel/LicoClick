@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lico-Click — Resumen del Turno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="fiados.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="dark-mode resumen-page">
+
+<!-- OVERLAY + MENÚ LATERAL -->
+<div class="menu-overlay" id="menu-overlay" onclick="closeMenu()"></div>
+<nav class="side-menu" id="side-menu">
+    <div class="side-menu-brand">
+        <div class="brand-name">Lico<span>Click</span></div>
+        <p>LAS PALMAS</p>
+    </div>
+    <a class="menu-item" href="index.html" onclick="closeMenu()">
+        <span class="menu-icon">🛒</span> Punto de Venta
+    </a>
+    <a class="menu-item" href="fiados.html" onclick="closeMenu()">
+        <span class="menu-icon">📒</span> Cuentas / Fiados
+    </a>
+    <a class="menu-item active" href="resumen.html" onclick="closeMenu()">
+        <span class="menu-icon">📊</span> Resumen del Turno
+    </a>
+    <div class="menu-spacer"></div>
+    <div class="menu-divider"></div>
+    <button class="btn-menu-logout" onclick="handleLogout()">
+        <span>🚪</span> Cerrar Sesión
+    </button>
+</nav>
+
+<!-- HEADER -->
+<header class="main-header">
+    <button class="btn-menu" onclick="toggleMenu()" aria-label="Menú">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="header-title">
+        <h1>Resumen del Turno</h1>
+        <p id="header-fecha">Cargando...</p>
+    </div>
+</header>
+
+<!-- CUERPO -->
+<div class="resumen-body">
+
+    <!-- GRAN TOTAL -->
+    <div class="r-gran-total">
+        <p>💰 Total General del Turno</p>
+        <div id="resumen-gran-total">$0</div>
+    </div>
+
+    <!-- VENTAS REGISTRADAS -->
+    <div class="r-section">
+        <div class="r-section-header">
+            <h2>🛒 Ventas en caja</h2>
+            <span class="r-total-badge" id="resumen-ventas-total">$0</span>
+        </div>
+        <div class="r-body">
+            <div id="resumen-ventas-lista">
+                <div class="r-empty">Sin ventas registradas</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RETIROS DE CAJA -->
+    <div class="r-section">
+        <div class="r-section-header">
+            <h2>💸 Retiros de caja</h2>
+            <span class="r-total-badge red" id="resumen-retiros-total">$0</span>
+        </div>
+        <div class="r-body">
+            <div id="resumen-retiros-lista">
+                <div class="r-empty">Sin retiros registrados</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIADOS PENDIENTES -->
+    <div class="r-section">
+        <div class="r-section-header">
+            <h2>📒 Cuentas por cobrar</h2>
+            <span class="r-total-badge amber" id="resumen-fiados-total">$0</span>
+        </div>
+        <div class="r-body">
+            <div id="resumen-fiados-lista">
+                <div class="r-empty">Sin cuentas pendientes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUADRE DE CAJA -->
+    <div class="r-cuadre">
+        <label>🧾 Cuadre de caja — efectivo físico</label>
+        <input type="number"
+            id="input-dinero-fisico"
+            placeholder="Ingresa el dinero contado..."
+            oninput="calcularCuadre()">
+        <p id="mensaje-cuadre" class="mensaje-cuadre-neutro">Ingresa el dinero para cuadrar</p>
+    </div>
+
+    <!-- BOTÓN CERRAR TURNO -->
+    <button class="btn-finalizar-turno" onclick="finalizarTurno()">
+        🔒 Cerrar Turno y Limpiar Ventas
+    </button>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

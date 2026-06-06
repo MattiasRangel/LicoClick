@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lico-Click — Acceso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Style.css">
+    <!-- SDK de Supabase — necesario solo para autenticar contra la tabla usuarios -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="login-page">
+
+    <div class="login-bg">
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+
+            <div class="logo-area">
+                <div class="logo-img-wrap">
+                    <img src="imagenes/laspalmas.png" alt="Las Palmas" class="logo-img"
+                        onerror="this.style.display='none'; document.querySelector('.logo-fallback').style.display='flex'">
+                    <div class="logo-fallback">🍺</div>
+                </div>
+                <h1 class="brand-name">Lico<span>Click</span></h1>
+                <p class="brand-sub">LAS PALMAS · PUNTO DE VENTA</p>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)" autocomplete="off">
+
+                <div class="field-group">
+                    <label for="username">Usuario</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="username" placeholder="cajero1 o admin" required>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="password">Contraseña</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="btn-login">
+                    <span class="btn-text">Iniciar Turno</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+
+            </form>
+
+            <p class="login-footer">Lico-Click POS v2.0 · Las Palmas</p>
+        </div>
+    </div>
+
+    <script>
+        // ---- Supabase solo para consultar la tabla usuarios ----
+        const SUPABASE_URL = "https://zdmlzhncujjmzmysktsq.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkbWx6aG5jdWpqbXpteXNrdHNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MzI2MTAsImV4cCI6MjA5NjEwODYxMH0.2x6zIoTGx_nfsSdMY6rkduqx2_Es9jBa_jF9DVGCgvA";
+        const dbLogin = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Si ya hay sesión guardada, ir directo al POS
+        (function redirigirSiSesionActiva() {
+            try {
+                const sesion = JSON.parse(localStorage.getItem('licoclick_sesion'));
+                if (sesion && sesion.nombre) {
+                    window.location.replace('index.html');
+                }
+            } catch { /* localStorage corrupto — ignorar y mostrar login */ }
+        })();
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const usuarioInput  = document.getElementById('username').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
+            const btn           = document.getElementById('btn-login');
+
+            if (!usuarioInput || !passwordInput) {
+                alert('⚠️ Por favor ingresa tu usuario y contraseña.');
+                return;
+            }
+
+            // Deshabilitar botón mientras consulta
+            btn.disabled   = true;
+            btn.innerHTML  = '<span class="btn-text">Verificando...</span><span class="btn-arrow">⏳</span>';
+
+            try {
+                const { data, error } = await dbLogin
+                    .from('usuarios')
+                    .select('id, nombre_mostrar, rol')
+                    .eq('username', usuarioInput)
+                    .eq('password', passwordInput)
+                    .limit(1);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    const usuario = data[0];
+
+                    // ÚNICO lugar donde se escribe la sesión.
+                    // script.js la lee con localStorage.getItem('licoclick_sesion').
+                    localStorage.setItem('licoclick_sesion', JSON.stringify({
+                        id:     usuario.id,
+                        nombre: usuario.nombre_mostrar,
+                        rol:    usuario.rol
+                    }));
+
+                    // Navegar al POS — replace() para que el botón Atrás
+                    // del celular no vuelva al login con sesión ya activa.
+                    window.location.replace('index.html');
+
+                } else {
+                    alert('❌ Usuario o contraseña incorrectos.');
+                    btn.disabled  = false;
+                    btn.innerHTML = '<span class="btn-text">Iniciar Turno</span><span class="btn-arrow">→</span>';
+                }
+
+            } catch (err) {
+                console.error('Error en login:', err);
+                alert('❌ Error de conexión con la base de datos.');
+                btn.disabled  = false;
+                btn.innerHTML = '<span class="btn-text">Iniciar Turno</span><span class="btn-arrow">→</span>';
+            }
+        }
+    </script>
+</body>
+</html>
