@@ -111,15 +111,25 @@
 
             <!-- Producto personalizado -->
             <div class="fiado-custom-card">
-                <label>✏️ Producto / cobro manual</label>
-                <div class="fiado-custom-row">
-                    <input type="text" id="fiado-custom-name" placeholder="Descripción..." style="flex:2">
-                    <input type="number" id="fiado-custom-price" placeholder="Precio" min="0" step="500" style="flex:1">
+                <label>✏️ Cobro / Producto manual</label>
+
+                <!-- Nombre -->
+                <div class="custom-name-wrap">
+                    <span>📝</span>
+                    <input type="text" id="fiado-custom-name" placeholder="Descripción del producto...">
                 </div>
+
+                <!-- Precio + Cantidad + Botón -->
                 <div class="fiado-custom-row">
-                    <button class="fiado-stepper-btn" onclick="stepFiadoQty('custom',-1)" style="background:var(--bg-card-2);border:1px solid var(--border);border-radius:var(--radius-sm);width:36px;height:36px;color:var(--text-white);font-size:18px;font-weight:700;cursor:pointer;">−</button>
-                    <input type="number" id="fqty-custom" value="1" min="1" style="flex:1;background:var(--bg-input);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text-white);text-align:center;font-size:14px;font-weight:700;padding:8px;outline:none;">
-                    <button class="fiado-stepper-btn" onclick="stepFiadoQty('custom',1)" style="background:var(--bg-card-2);border:1px solid var(--border);border-radius:var(--radius-sm);width:36px;height:36px;color:var(--text-white);font-size:18px;font-weight:700;cursor:pointer;">+</button>
+                    <div class="price-wrap">
+                        <span>$</span>
+                        <input type="number" id="fiado-custom-price" placeholder="Precio" min="0" step="500">
+                    </div>
+                    <div class="qty-stepper">
+                        <button onclick="stepFiadoQty('custom',-1)">−</button>
+                        <input type="number" id="fqty-custom" value="1" min="1">
+                        <button onclick="stepFiadoQty('custom',1)">+</button>
+                    </div>
                     <button class="btn-custom-add" onclick="addCustomToFiado()">+ Agregar</button>
                 </div>
             </div>

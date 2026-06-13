@@ -1185,73 +1185,120 @@ async function iniciarPaginaResumen() {
     }
 
     await renderizarResumen();
+
+    // ---- Realtime: actualizar automáticamente cuando otra persona
+    //               registra ventas, retiros o cobra fiados ----
+    try {
+        const db = getDb();
+        db.channel('resumen-multiusuario')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'ventas' },
+                () => renderizarResumen())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'retiros_caja' },
+                () => renderizarResumen())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'fiados' },
+                () => renderizarResumen())
+            .subscribe();
+    } catch (e) {
+        console.warn('Realtime no disponible, refrescando cada 30s:', e);
+        // Fallback: refresco cada 30 segundos
+        setInterval(() => renderizarResumen(), 30000);
+    }
 }
 
 async function renderizarResumen() {
     try {
         const db = getDb();
-        // Rango: desde las 00:00:00 de hoy
-        const hoy       = new Date();
-        const inicioDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
 
-        // ---- Ventas del día ----
-        const { data: ventas, error: ventasErr } = await db
+        // ================================================================
+        // 1. VENTAS EN CAJA — TODO el dinero real que entró:
+        //    - 'efectivo': ventas normales de mostrador
+        //    - 'cobro_fiado': fiados que el cliente pagó completo
+        //    - 'abono_fiado': pagos parciales de fiados
+        //    Lo que NO se incluye: los fiados ACTIVOS (están en tabla fiados)
+        // ================================================================
+        const { data: ventasData, error: ventasErr } = await db
             .from('ventas')
-            .select('id, total_venta')
-            .gte('fecha_venta', inicioDia);
+            .select('id, total_venta, metodo_pago');
         if (ventasErr) throw ventasErr;
 
-        const totalVentas   = (ventas || []).reduce((s, v) => s + (v.total_venta || 0), 0);
+        // Todas las filas de ventas son dinero real que entró a caja
+        const todasVentas = ventasData || [];
+        const totalVentas = todasVentas.reduce((s, v) => s + (v.total_venta || 0), 0);
+
         const elVentasTotal = document.getElementById('resumen-ventas-total');
         if (elVentasTotal) elVentasTotal.innerText = `$${totalVentas.toLocaleString('es-CO')}`;
 
-        // ---- Detalle de productos vendidos hoy ----
-        const ventaIds    = (ventas || []).map(v => v.id);
+        // ---- Detalle: solo ventas normales de mostrador (no fiados) ----
+        // Los cobros de fiados no se detallan aquí porque ya se ven en la sección de fiados
+        const ventasMostrador = todasVentas.filter(
+            v => v.metodo_pago === 'efectivo' || v.metodo_pago === 'tarjeta' || v.metodo_pago === 'transferencia'
+        );
         const listaVentas = document.getElementById('resumen-ventas-lista');
+        const ventaIds    = ventasMostrador.map(v => v.id);
 
         if (ventaIds.length === 0) {
-            if (listaVentas) listaVentas.innerHTML = '<div class="r-empty">Sin ventas hoy</div>';
+            if (listaVentas) listaVentas.innerHTML = '<div class="r-empty">Sin ventas registradas en este turno</div>';
         } else {
-            const { data: vItems, error: vItemsErr } = await db
-                .from('venta_items')
-                .select('producto_nombre, cantidad')
-                .in('venta_id', ventaIds);
-            if (vItemsErr) throw vItemsErr;
+            // Consulta por lotes de 50 IDs para evitar límite de Supabase con .in()
+            const BATCH = 50;
+            let todosItems = [];
+            for (let i = 0; i < ventaIds.length; i += BATCH) {
+                const lote = ventaIds.slice(i, i + BATCH);
+                const { data: batchItems, error: batchErr } = await db
+                    .from('venta_items')
+                    .select('producto_nombre, cantidad, precio')
+                    .in('venta_id', lote);
+                if (batchErr) throw batchErr;
+                todosItems = todosItems.concat(batchItems || []);
+            }
 
+            // Consolidar por nombre de producto
             const consolidado = {};
-            (vItems || []).forEach(i => { consolidado[i.producto_nombre] = (consolidado[i.producto_nombre] || 0) + i.cantidad; });
+            todosItems.forEach(i => {
+                if (!consolidado[i.producto_nombre]) {
+                    consolidado[i.producto_nombre] = { cantidad: 0, subtotal: 0 };
+                }
+                consolidado[i.producto_nombre].cantidad += i.cantidad;
+                consolidado[i.producto_nombre].subtotal  += i.precio * i.cantidad;
+            });
 
             if (listaVentas) {
                 listaVentas.innerHTML = '';
-                if (Object.keys(consolidado).length === 0) {
+                const entradas = Object.entries(consolidado);
+                if (entradas.length === 0) {
                     listaVentas.innerHTML = '<div class="r-empty">Sin detalle disponible</div>';
                 } else {
-                    for (const [nombre, cantidad] of Object.entries(consolidado)) {
+                    // Ordenar por subtotal descendente (lo más vendido arriba)
+                    entradas.sort((a, b) => b[1].subtotal - a[1].subtotal);
+                    for (const [nombre, datos] of entradas) {
                         listaVentas.innerHTML += `
                             <div class="r-row">
                                 <span class="r-nombre">${nombre}</span>
-                                <span class="r-badge">×${cantidad}</span>
+                                <span class="r-badge">×${datos.cantidad}</span>
                             </div>`;
                     }
                 }
             }
         }
 
-        // ---- RETIROS DE CAJA (Desde Supabase) ----
+        // ================================================================
+        // 2. RETIROS DE CAJA
+        // ================================================================
         const { data: retirosData, error: retirosErr } = await db
             .from('retiros_caja')
             .select('monto, motivo, fecha')
-            .gte('fecha', inicioDia) // Filtramos solo los retiros de hoy
             .order('fecha', { ascending: false });
         if (retirosErr) throw retirosErr;
 
-        const retirosList = retirosData || [];
+        const retirosList  = retirosData || [];
         const totalRetiros = retirosList.reduce((s, r) => s + (r.monto || 0), 0);
-        
+
         const elRetirosTotal = document.getElementById('resumen-retiros-total');
         const listaRetiros   = document.getElementById('resumen-retiros-lista');
 
-        if (elRetirosTotal) elRetirosTotal.innerText = totalRetiros > 0 ? `-$${totalRetiros.toLocaleString('es-CO')}` : '$0';
+        if (elRetirosTotal) elRetirosTotal.innerText = totalRetiros > 0
+            ? `-$${totalRetiros.toLocaleString('es-CO')}` : '$0';
+
         if (listaRetiros) {
             if (retirosList.length === 0) {
                 listaRetiros.innerHTML = '<div class="r-empty">Sin retiros este turno</div>';
@@ -1268,22 +1315,22 @@ async function renderizarResumen() {
             }
         }
 
-        // ---- Fiados activos ----
+        // ================================================================
+        // 3. FIADOS ACTIVOS — informativo, NO se suma al total de caja
+        //    porque el dinero no ha entrado todavía
+        // ================================================================
         const { data: fiadosActivos, error: fiadosErr } = await db
             .from('fiados')
             .select('nombre_cliente, total_productos, total_abonado')
             .eq('estado', 'activo');
         if (fiadosErr) throw fiadosErr;
 
-        const totalFiados = (fiadosActivos || []).reduce((s, f) => s + ((f.total_productos || 0) - (f.total_abonado || 0)), 0);
+        const totalFiados   = (fiadosActivos || []).reduce(
+            (s, f) => s + ((f.total_productos || 0) - (f.total_abonado || 0)), 0
+        );
         const elFiadosTotal = document.getElementById('resumen-fiados-total');
-        const elGranTotal   = document.getElementById('resumen-gran-total');
-        
         if (elFiadosTotal) elFiadosTotal.innerText = `$${totalFiados.toLocaleString('es-CO')}`;
-        
-        const granTotal = totalVentas + totalFiados - totalRetiros;
-        if (elGranTotal) elGranTotal.innerText = `$${granTotal.toLocaleString('es-CO')}`;
-        
+
         const listaFiados = document.getElementById('resumen-fiados-lista');
         if (listaFiados) {
             listaFiados.innerHTML = '';
@@ -1304,10 +1351,19 @@ async function renderizarResumen() {
             }
         }
 
-        // GUARDAMOS LAS 3 VARIABLES EN MEMORIA TEMPORAL PARA EL CIERRE
+        // ================================================================
+        // 4. GRAN TOTAL — solo lo que realmente entró a caja:
+        //    ventas de mostrador MENOS retiros.
+        //    Los fiados se muestran aparte como "pendiente por cobrar".
+        // ================================================================
+        const granTotal   = totalVentas - totalRetiros;
+        const elGranTotal = document.getElementById('resumen-gran-total');
+        if (elGranTotal) elGranTotal.innerText = `$${Math.max(0, granTotal).toLocaleString('es-CO')}`;
+
+        // Guardar para calcularCuadre y finalizarTurno
         window._resumenTotalVentas  = totalVentas;
         window._resumenTotalFiados  = totalFiados;
-        window._resumenTotalRetiros = totalRetiros; // ¡Nueva variable!
+        window._resumenTotalRetiros = totalRetiros;
 
     } catch (err) {
         console.error('Error cargando resumen:', err);
@@ -1317,19 +1373,20 @@ async function renderizarResumen() {
 
 // ---- Cuadre de caja ----
 function calcularCuadre() {
-    const totalSistema  = (window._resumenTotalVentas || 0) + (window._resumenTotalFiados || 0);
-    const totalRetiros  = window._resumenTotalRetiros || 0; // Lee directo de la variable global
-    const baseEsperada  = totalSistema - totalRetiros;
-    
-    const dineroFisico  = parseInt(document.getElementById('input-dinero-fisico')?.value);
-    const msg           = document.getElementById('mensaje-cuadre');
+    // Base esperada = lo que entró a caja real (ventas + cobros de fiado) - retiros
+    const totalVentas  = window._resumenTotalVentas  || 0;
+    const totalRetiros = window._resumenTotalRetiros || 0;
+    const baseEsperada = totalVentas - totalRetiros;
+
+    const dineroFisico = parseInt(document.getElementById('input-dinero-fisico')?.value);
+    const msg          = document.getElementById('mensaje-cuadre');
     if (!msg) return;
 
     if (isNaN(dineroFisico)) {
         msg.className = 'mensaje-cuadre-neutro';
         msg.innerText = totalRetiros > 0
-            ? `Retiros del turno: $${totalRetiros.toLocaleString('es-CO')} ya descontados`
-            : 'Ingresa el dinero para cuadrar';
+            ? `Retiros descontados: -$${totalRetiros.toLocaleString('es-CO')}`
+            : 'Ingresa el dinero contado para cuadrar';
         return;
     }
 
@@ -1364,27 +1421,27 @@ async function _obtenerTotalRetiros() {
     }
 }
 
-// ---- Cierre de turno → INSERT en cierres_caja ----
+// ---- Cierre de turno → guarda cierre, borra ventas/retiros, nuevo turno ----
 async function finalizarTurno() {
-    const totalVentas  = window._resumenTotalVentas || 0;
-    const totalFiados  = window._resumenTotalFiados || 0;
-    const totalRetiros = window._resumenTotalRetiros || 0; 
-    const totalSistema = totalVentas + totalFiados;
-    
-    const baseEsperada = totalSistema - totalRetiros;
-    const efectivo     = parseInt(document.getElementById('input-dinero-fisico')?.value) || 0;
-    const diferencia   = efectivo - baseEsperada;
-    const sesion       = obtenerSesion();
+    const totalVentas    = window._resumenTotalVentas  || 0;
+    const totalRetiros   = window._resumenTotalRetiros || 0;
+    const totalFiados    = window._resumenTotalFiados  || 0;
+    const efectivoEnCaja = totalVentas - totalRetiros;
+    const sesion         = obtenerSesion();
 
-    const retirosTxt = totalRetiros > 0
-        ? `\nRetiros de caja: -$${totalRetiros.toLocaleString('es-CO')}\nBase esperada: $${baseEsperada.toLocaleString('es-CO')}`
-        : '';
+    const efectivo   = parseInt(document.getElementById('input-dinero-fisico')?.value) || 0;
+    const diferencia = efectivo - efectivoEnCaja;
+
+    const retirosTxt = totalRetiros > 0 ? `\nRetiros: -$${totalRetiros.toLocaleString('es-CO')}` : '';
+    const fiadosTxt  = totalFiados  > 0 ? `\nFiados pendientes (no incluidos): $${totalFiados.toLocaleString('es-CO')}` : '';
 
     if (!confirm(
         `¿Cerrar el turno?\n\n` +
-        `Sistema: $${totalSistema.toLocaleString('es-CO')}${retirosTxt}\n` +
-        `Efectivo: $${efectivo.toLocaleString('es-CO')}\n` +
-        `Diferencia: $${diferencia.toLocaleString('es-CO')}`
+        `Ventas en caja: $${totalVentas.toLocaleString('es-CO')}${retirosTxt}\n` +
+        `Esperado en caja: $${efectivoEnCaja.toLocaleString('es-CO')}\n` +
+        `Contado: $${efectivo.toLocaleString('es-CO')}\n` +
+        `Diferencia: $${diferencia.toLocaleString('es-CO')}${fiadosTxt}\n\n` +
+        `Se borrarán las ventas y retiros de este turno para iniciar uno nuevo.`
     )) return;
 
     const btn = document.querySelector('.btn-finalizar-turno');
@@ -1392,17 +1449,63 @@ async function finalizarTurno() {
 
     try {
         const db = getDb();
-        const { error } = await db.from('cierres_caja').insert({
+
+        // 1. Guardar el cierre en cierres_caja
+        const { error: cierreErr } = await db.from('cierres_caja').insert({
             cajero_nombre:   sesion?.nombre || 'Desconocido',
             ventas_sistema:  totalVentas,
             efectivo_fisico: efectivo,
-            diferencia:      diferencia
+            diferencia
         });
+        if (cierreErr) throw cierreErr;
 
-        if (error) throw error;
+        // 2. Obtener IDs de todas las ventas del turno para borrar sus ítems
+        const { data: ventasIds, error: idsErr } = await db
+            .from('ventas')
+            .select('id');
+        if (idsErr) throw idsErr;
 
-        mostrarToast('✅ Turno cerrado y guardado en la nube');
-        // Refrescar los totales después del cierre
+        // 3. Borrar venta_items en lotes (evitar límite de Supabase)
+        const ids = (ventasIds || []).map(v => v.id);
+        const BATCH = 50;
+        for (let i = 0; i < ids.length; i += BATCH) {
+            const lote = ids.slice(i, i + BATCH);
+            const { error: viErr } = await db
+                .from('venta_items')
+                .delete()
+                .in('venta_id', lote);
+            if (viErr) throw viErr;
+        }
+
+        // 4. Borrar todas las ventas del turno
+        const { error: ventasErr } = await db
+            .from('ventas')
+            .delete()
+            .neq('id', 0); // neq(0) = borrar todas las filas
+        if (ventasErr) throw ventasErr;
+
+        // 5. Borrar todos los retiros del turno
+        const { error: retirosErr } = await db
+            .from('retiros_caja')
+            .delete()
+            .neq('id', 0);
+        if (retirosErr) throw retirosErr;
+
+        // 6. Limpiar carrito local también
+        localStorage.removeItem('licoclick_carrito');
+
+        mostrarToast('✅ Turno cerrado · Nuevo turno iniciado');
+
+        // Limpiar el input de efectivo y refrescar
+        const inputEfectivo = document.getElementById('input-dinero-fisico');
+        if (inputEfectivo) inputEfectivo.value = '';
+        const msgCuadre = document.getElementById('mensaje-cuadre');
+        if (msgCuadre) {
+            msgCuadre.className = 'mensaje-cuadre-neutro';
+            msgCuadre.innerText = 'Ingresa el dinero contado para cuadrar';
+        }
+
+        // Recargar resumen con datos en cero (nuevo turno)
         setTimeout(() => renderizarResumen(), 800);
 
     } catch (err) {
