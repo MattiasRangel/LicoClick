@@ -1228,13 +1228,11 @@ async function renderizarResumen() {
         const elVentasTotal = document.getElementById('resumen-ventas-total');
         if (elVentasTotal) elVentasTotal.innerText = `$${totalVentas.toLocaleString('es-CO')}`;
 
-        // ---- Detalle: solo ventas normales de mostrador (no fiados) ----
-        // Los cobros de fiados no se detallan aquí porque ya se ven en la sección de fiados
-        const ventasMostrador = todasVentas.filter(
-            v => v.metodo_pago === 'efectivo' || v.metodo_pago === 'tarjeta' || v.metodo_pago === 'transferencia'
-        );
+        // ---- Detalle: TODOS los ítems vendidos en el turno (mostrador + fiados cobrados) ----
+        // Usamos todos los IDs de ventas — así aparecen tanto las ventas normales
+        // como los productos de fiados que se cobraron ([Fiado] Águila Botella, etc.)
         const listaVentas = document.getElementById('resumen-ventas-lista');
-        const ventaIds    = ventasMostrador.map(v => v.id);
+        const ventaIds    = todasVentas.map(v => v.id);
 
         if (ventaIds.length === 0) {
             if (listaVentas) listaVentas.innerHTML = '<div class="r-empty">Sin ventas registradas en este turno</div>';
@@ -1252,14 +1250,19 @@ async function renderizarResumen() {
                 todosItems = todosItems.concat(batchItems || []);
             }
 
-            // Consolidar por nombre de producto
+            // Limpiar el prefijo [Fiado] y [Abono] para mostrar el nombre limpio
+            // y agrupar correctamente (ej: "[Fiado] Águila Botella" + "Águila Botella" = mismo producto)
             const consolidado = {};
             todosItems.forEach(i => {
-                if (!consolidado[i.producto_nombre]) {
-                    consolidado[i.producto_nombre] = { cantidad: 0, subtotal: 0 };
+                const nombreLimpio = i.producto_nombre
+                    .replace(/^\[Fiado\]\s*/i, '')
+                    .replace(/^\[Abono\]\s*/i, '')
+                    .trim();
+                if (!consolidado[nombreLimpio]) {
+                    consolidado[nombreLimpio] = { cantidad: 0, subtotal: 0 };
                 }
-                consolidado[i.producto_nombre].cantidad += i.cantidad;
-                consolidado[i.producto_nombre].subtotal  += i.precio * i.cantidad;
+                consolidado[nombreLimpio].cantidad += i.cantidad;
+                consolidado[nombreLimpio].subtotal  += i.precio * i.cantidad;
             });
 
             if (listaVentas) {
