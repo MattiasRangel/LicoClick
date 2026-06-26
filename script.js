@@ -43,7 +43,18 @@ const PRODUCTOS_DB = {
     lata_cola_pola:       { nombre: 'Lata Cola y Pola',      precio: 4000  },
     coronita:             { nombre: 'Coronita',              precio: 4000  },
     costena_botella:      { nombre: 'Costeña Botella',       precio: 5000  },
+    costeña_lata:         { nombre: 'Costeña Lata',          precio: 35000 },
+    reds_lata:         { nombre: 'Reds Lata',          precio: 4000 },
     media_ron:            { nombre: 'Media de Ron',          precio: 35000 },
+    ron_750:              { nombre: 'Ron 750',          precio: 35000 },
+    media_aguardiente_azul:     { nombre: 'Media de aguardiente azul',          precio: 30000 },
+    media_amarillo:             { nombre: 'Media de Amarillo',          precio: 35000 },
+    media_amarillo_750:         { nombre: 'Media de Amarillo 750',          precio: 35000 },
+    media_verde:          { nombre: 'Media verde',          precio: 35000 },
+    media_verde:          { nombre: 'Media verde',          precio: 35000 },
+
+
+    hydrolate:            { nombre: 'Hydrolate',          precio: 35000 },
     sporade:              { nombre: 'Sporade',               precio: 3500  },
     vive100:              { nombre: 'Vive100',               precio: 4000  },
     budweiser_lata:       { nombre: 'Budweiser Lata',        precio: 3500  }

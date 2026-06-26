@@ -26,6 +26,9 @@
                     <span id="active-user-role" class="user-role">Rol</span>
                 </div>
             </div>
+            <button class="btn-edit-prices" id="btn-edit-prices" onclick="toggleModoEdicion()" title="Editar precios">
+                ✏️
+            </button>
         </header>
 
         <!-- Carrito -->
@@ -331,6 +334,20 @@
                     </div>
                 </div>
 
+                <!-- Aguardiente Azul -->
+                <div class="product-card card-ron">
+                    <button class="product-main-btn" onclick="addProductFromCard('media_aguardiente_azul')">
+                        <div class="img-container"><img src="imagenes/aguardiente_azul.png" alt="Media de Aguardiente Azul" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="product-title">Media de Aguardiente Azul</span>
+                        <span class="product-price">$30.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('media_aguardiente_azul', -1)">−</button>
+                        <input type="number" id="qty-media_aguardiente_azul" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('media_aguardiente_azul', 1)">+</button>
+                    </div>
+                </div>
+
                 <!-- Sporade -->
                 <div class="product-card">
                     <button class="product-main-btn" onclick="addProductFromCard('sporade')">
@@ -375,6 +392,104 @@
                         <button class="btn-step" onclick="stepProductCardQty('budweiser_lata', -1)">−</button>
                         <input type="number" id="qty-budweiser_lata" value="1" min="1" onchange="validateCardQty(this)">
                         <button class="btn-step" onclick="stepProductCardQty('budweiser_lata', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Costeña Lata -->
+                <div class="product-card card-costena" id="card-costeña_lata">
+                    <button class="product-main-btn" onclick="addProductFromCard('costeña_lata')">
+                        <div class="img-container"><img src="imagenes/costeñita.png" alt="Costeña Lata" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="product-title">Costeña Lata</span>
+                        <span class="product-price" id="price-label-costeña_lata">$35.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('costeña_lata', -1)">−</button>
+                        <input type="number" id="qty-costeña_lata" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('costeña_lata', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Reds Lata -->
+                <div class="product-card" id="card-reds_lata">
+                    <button class="product-main-btn" onclick="addProductFromCard('reds_lata')">
+                        <div class="img-container"><img src="imagenes/reds.png" alt="Reds Lata" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="product-title">Reds Lata</span>
+                        <span class="product-price" id="price-label-reds_lata">$4.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('reds_lata', -1)">−</button>
+                        <input type="number" id="qty-reds_lata" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('reds_lata', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Ron 750 -->
+                <div class="product-card card-ron" id="card-ron_750">
+                    <button class="product-main-btn" onclick="addProductFromCard('ron_750')">
+                        <div class="img-container"><img src="imagenes/ron750.png" alt="Ron 750" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="product-title">Ron 750</span>
+                        <span class="product-price" id="price-label-ron_750">$35.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('ron_750', -1)">−</button>
+                        <input type="number" id="qty-ron_750" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('ron_750', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Media Amarillo -->
+                <div class="product-card card-ron" id="card-media_amarillo">
+                    <button class="product-main-btn" onclick="addProductFromCard('media_amarillo')">
+                        <div class="img-container"><img src="imagenes/media_amarillo.png" alt="Media Amarillo" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="product-title">Media Amarillo</span>
+                        <span class="product-price" id="price-label-media_amarillo">$35.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('media_amarillo', -1)">−</button>
+                        <input type="number" id="qty-media_amarillo" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('media_amarillo', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Media Amarillo 750 -->
+                <div class="product-card card-ron" id="card-media_amarillo_750">
+                    <button class="product-main-btn" onclick="addProductFromCard('media_amarillo_750')">
+                        <div class="img-container"><img src="imagenes/media_amarillo.png" alt="Media Amarillo 750" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="product-title">Amarillo 750</span>
+                        <span class="product-price" id="price-label-media_amarillo_750">$35.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('media_amarillo_750', -1)">−</button>
+                        <input type="number" id="qty-media_amarillo_750" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('media_amarillo_750', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Media Verde -->
+                <div class="product-card card-ron" id="card-media_verde">
+                    <button class="product-main-btn" onclick="addProductFromCard('media_verde')">
+                        <div class="img-container"><img src="imagenes/tapa_verde.png" alt="Media Verde" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="product-title">Media Verde</span>
+                        <span class="product-price" id="price-label-media_verde">$35.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('media_verde', -1)">−</button>
+                        <input type="number" id="qty-media_verde" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('media_verde', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Hydrolate -->
+                <div class="product-card" id="card-hydrolate">
+                    <button class="product-main-btn" onclick="addProductFromCard('hydrolate')">
+                        <div class="img-container"><img src="imagenes/hydrolate.png" alt="Hydrolate" onerror="this.parentNode.innerHTML='💧'"></div>
+                        <span class="product-title">Hydrolate</span>
+                        <span class="product-price" id="price-label-hydrolate">$35.000</span>
+                    </button>
+                    <div class="stepper-control">
+                        <button class="btn-step" onclick="stepProductCardQty('hydrolate', -1)">−</button>
+                        <input type="number" id="qty-hydrolate" value="1" min="1" onchange="validateCardQty(this)">
+                        <button class="btn-step" onclick="stepProductCardQty('hydrolate', 1)">+</button>
                     </div>
                 </div>
 

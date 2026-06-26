@@ -43,6 +43,9 @@
         <h1>Cuentas / Fiados</h1>
         <p id="header-user-name">Cargando...</p>
     </div>
+    <button class="btn-edit-prices" id="btn-edit-prices" onclick="toggleModoEdicion()" title="Editar precios">
+        ✏️
+    </button>
 </header>
 
 <!-- ============================================================
@@ -464,12 +467,124 @@
                     <button class="fiado-prod-btn" onclick="addProductToFiado('budweiser_lata')">
                         <div class="fiado-prod-img"><img src="imagenes/latabudweiser.png" alt="Budweiser" onerror="this.parentNode.innerHTML='🥫'"></div>
                         <span class="fiado-prod-title">Budweiser Lata</span>
-                        <span class="fiado-prod-price">$3.500</span>
+                        <span class="fiado-prod-price" id="price-label-budweiser_lata">$3.500</span>
                     </button>
                     <div class="fiado-stepper">
                         <button onclick="stepFiadoQty('budweiser_lata',-1)">−</button>
                         <input type="number" id="fqty-budweiser_lata" value="1" min="1">
                         <button onclick="stepFiadoQty('budweiser_lata',1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Costeña Lata -->
+                <div class="fiado-product-card card-costena">
+                    <button class="fiado-prod-btn" onclick="addProductToFiado('costeña_lata')">
+                        <div class="fiado-prod-img"><img src="imagenes/costeñita.png" alt="Costeña Lata" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="fiado-prod-title">Costeña Lata</span>
+                        <span class="fiado-prod-price" id="price-label-costeña_lata">$35.000</span>
+                    </button>
+                    <div class="fiado-stepper">
+                        <button onclick="stepFiadoQty('costeña_lata',-1)">−</button>
+                        <input type="number" id="fqty-costeña_lata" value="1" min="1">
+                        <button onclick="stepFiadoQty('costeña_lata',1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Reds Lata -->
+                <div class="fiado-product-card">
+                    <button class="fiado-prod-btn" onclick="addProductToFiado('reds_lata')">
+                        <div class="fiado-prod-img"><img src="imagenes/reds.png" alt="Reds" onerror="this.parentNode.innerHTML='🥫'"></div>
+                        <span class="fiado-prod-title">Reds Lata</span>
+                        <span class="fiado-prod-price" id="price-label-reds_lata">$4.000</span>
+                    </button>
+                    <div class="fiado-stepper">
+                        <button onclick="stepFiadoQty('reds_lata',-1)">−</button>
+                        <input type="number" id="fqty-reds_lata" value="1" min="1">
+                        <button onclick="stepFiadoQty('reds_lata',1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Ron 750 -->
+                <div class="fiado-product-card card-ron">
+                    <button class="fiado-prod-btn" onclick="addProductToFiado('ron_750')">
+                        <div class="fiado-prod-img"><img src="imagenes/ron750.png" alt="Ron 750" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="fiado-prod-title">Ron 750</span>
+                        <span class="fiado-prod-price" id="price-label-ron_750">$35.000</span>
+                    </button>
+                    <div class="fiado-stepper">
+                        <button onclick="stepFiadoQty('ron_750',-1)">−</button>
+                        <input type="number" id="fqty-ron_750" value="1" min="1">
+                        <button onclick="stepFiadoQty('ron_750',1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Media Aguardiente Azul -->
+                <div class="fiado-product-card card-ron">
+                    <button class="fiado-prod-btn" onclick="addProductToFiado('media_aguardiente_azul')">
+                        <div class="fiado-prod-img"><img src="imagenes/aguardiente_azul.png" alt="Aguardiente Azul" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="fiado-prod-title">Media Aguardiente Azul</span>
+                        <span class="fiado-prod-price" id="price-label-media_aguardiente_azul">$30.000</span>
+                    </button>
+                    <div class="fiado-stepper">
+                        <button onclick="stepFiadoQty('media_aguardiente_azul',-1)">−</button>
+                        <input type="number" id="fqty-media_aguardiente_azul" value="1" min="1">
+                        <button onclick="stepFiadoQty('media_aguardiente_azul',1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Media Amarillo -->
+                <div class="fiado-product-card card-ron">
+                    <button class="fiado-prod-btn" onclick="addProductToFiado('media_amarillo')">
+                        <div class="fiado-prod-img"><img src="imagenes/media_amarillo.png" alt="Media Amarillo" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="fiado-prod-title">Media Amarillo</span>
+                        <span class="fiado-prod-price" id="price-label-media_amarillo">$35.000</span>
+                    </button>
+                    <div class="fiado-stepper">
+                        <button onclick="stepFiadoQty('media_amarillo',-1)">−</button>
+                        <input type="number" id="fqty-media_amarillo" value="1" min="1">
+                        <button onclick="stepFiadoQty('media_amarillo',1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Media Amarillo 750 -->
+                <div class="fiado-product-card card-ron">
+                    <button class="fiado-prod-btn" onclick="addProductToFiado('media_amarillo_750')">
+                        <div class="fiado-prod-img"><img src="imagenes/media_amarillo.png" alt="Amarillo 750" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="fiado-prod-title">Amarillo 750</span>
+                        <span class="fiado-prod-price" id="price-label-media_amarillo_750">$35.000</span>
+                    </button>
+                    <div class="fiado-stepper">
+                        <button onclick="stepFiadoQty('media_amarillo_750',-1)">−</button>
+                        <input type="number" id="fqty-media_amarillo_750" value="1" min="1">
+                        <button onclick="stepFiadoQty('media_amarillo_750',1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Media Verde -->
+                <div class="fiado-product-card card-ron">
+                    <button class="fiado-prod-btn" onclick="addProductToFiado('media_verde')">
+                        <div class="fiado-prod-img"><img src="imagenes/tapa_verde.png" alt="Media Verde" onerror="this.parentNode.innerHTML='🥃'"></div>
+                        <span class="fiado-prod-title">Media Verde</span>
+                        <span class="fiado-prod-price" id="price-label-media_verde">$35.000</span>
+                    </button>
+                    <div class="fiado-stepper">
+                        <button onclick="stepFiadoQty('media_verde',-1)">−</button>
+                        <input type="number" id="fqty-media_verde" value="1" min="1">
+                        <button onclick="stepFiadoQty('media_verde',1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Hydrolate -->
+                <div class="fiado-product-card">
+                    <button class="fiado-prod-btn" onclick="addProductToFiado('hydrolate')">
+                        <div class="fiado-prod-img"><img src="imagenes/hydrolate.png" alt="Hydrolate" onerror="this.parentNode.innerHTML='💧'"></div>
+                        <span class="fiado-prod-title">Hydrolate</span>
+                        <span class="fiado-prod-price" id="price-label-hydrolate">$35.000</span>
+                    </button>
+                    <div class="fiado-stepper">
+                        <button onclick="stepFiadoQty('hydrolate',-1)">−</button>
+                        <input type="number" id="fqty-hydrolate" value="1" min="1">
+                        <button onclick="stepFiadoQty('hydrolate',1)">+</button>
                     </div>
                 </div>
 
