@@ -67,17 +67,23 @@ const PRODUCTOS_DB = {
 // =================================================================
 const FORMATO_CONFIG = {
     // Latas (sixpack=6 / bandeja=24)
-    aguilita:           { type:'can',    unitPrice:3000 },
-    aguila_lata_gorda:  { type:'can',    unitPrice:4000 },
-    aguila_light_lata:  { type:'can',    unitPrice:3000 },
-    poker_lata_gorda:   { type:'can',    unitPrice:4000 },
-    lata_club_colombia: { type:'can',    unitPrice:3500 },
-    budweiser_lata:     { type:'can',    unitPrice:3500 },
+    aguilita:           { type:'can', unitPrice:3000 },
+    aguila_lata_gorda:  { type:'can', unitPrice:4000 },
+    aguila_light_lata:  { type:'can', unitPrice:3000 },
+    poker_lata_gorda:   { type:'can', unitPrice:4000 },
+    lata_club_colombia: { type:'can', unitPrice:3500 },
+    budweiser_lata:     { type:'can', unitPrice:3500 },
     coronita:           { type:'can', unitPrice:4000 },
+    amper:              { type:'can', unitPrice:4000 },
+    bretana:            { type:'can', unitPrice:3500 },
+    lata_cola_pola:     { type:'can', unitPrice:4000 },
+    sporade:            { type:'can', unitPrice:3500 },
+    vive100:            { type:'can', unitPrice:4000 },
+    reds_lata:          { type:'can', unitPrice:4000 },
+    'costeña_lata':     { type:'can', unitPrice:35000 },
     // Botellas (media caja=7 / caja=13)
     aguila_botella:     { type:'bottle', unitPrice:7000 },
     poker_1000:         { type:'bottle', unitPrice:7000 },
-    
 };
 
 // Estado activo de formato por producto
@@ -91,9 +97,118 @@ let _sacarCajaPendiente = { monto: 0, motivo: '' };
 let _fmtPendiente = { id: null, mode: null };
 // =================================================================
 
-/**
- * Lee y parsea la sesión desde localStorage.
- * Devuelve el objeto { id, nombre, rol } o null.
+// =================================================================
+// SISTEMA DE EDICIÓN DE PRECIOS
+// Guardado en localStorage con clave 'licoclick_precios'.
+// Se carga al arrancar y sincroniza PRODUCTOS_DB + FORMATO_CONFIG.
+// =================================================================
+
+function cargarPreciosGuardados() {
+    try {
+        const guardados = JSON.parse(localStorage.getItem('licoclick_precios')) || {};
+        Object.keys(guardados).forEach(id => {
+            if (PRODUCTOS_DB[id]) {
+                PRODUCTOS_DB[id].precio = guardados[id];
+            }
+            if (FORMATO_CONFIG[id]) {
+                FORMATO_CONFIG[id].unitPrice = guardados[id];
+            }
+        });
+    } catch { /* nada */ }
+}
+
+let _modoEdicionActivo = false;
+
+function toggleModoEdicion() {
+    _modoEdicionActivo = !_modoEdicionActivo;
+    const btn = document.getElementById('btn-edit-prices');
+
+    if (_modoEdicionActivo) {
+        if (btn) btn.classList.add('active');
+        mostrarInputsEdicion();
+        mostrarToast('✏️ Toca el precio amarillo para editarlo');
+    } else {
+        if (btn) btn.classList.remove('active');
+        guardarYAplicarPrecios();
+        ocultarInputsEdicion();
+        mostrarToast('✅ Precios guardados');
+    }
+}
+
+function mostrarInputsEdicion() {
+    // Primero limpiar cualquier input previo que pudiera haber quedado
+    // Esto evita el bug de "dos precios" si se activa dos veces
+    ocultarInputsEdicion();
+
+    Object.keys(PRODUCTOS_DB).forEach(id => {
+        const span = document.getElementById(`price-label-${id}`);
+        if (!span) return;
+
+        // Guardar precio actual en el span para restaurarlo al cancelar
+        const precioActual = PRODUCTOS_DB[id].precio;
+
+        const input = document.createElement('input');
+        input.type       = 'number';
+        input.id         = `price-edit-${id}`;
+        input.value      = precioActual;
+        input.min        = '500';
+        input.step       = '500';
+        input.className  = 'price-edit-input';
+        input.dataset.id = id;
+
+        // CRÍTICO: evitar que el tap propague al botón de producto o modal de formato
+        input.addEventListener('click',   e => e.stopPropagation());
+        input.addEventListener('touchend', e => e.stopPropagation());
+        input.addEventListener('pointerdown', e => e.stopPropagation());
+
+        span.style.display = 'none';
+        span.parentNode.insertBefore(input, span);
+    });
+}
+
+function ocultarInputsEdicion() {
+    document.querySelectorAll('.price-edit-input').forEach(input => {
+        const span = document.getElementById(`price-label-${input.dataset.id}`);
+        if (span) span.style.display = '';
+        input.remove();
+    });
+}
+
+function guardarYAplicarPrecios() {
+    const nuevos = {};
+    document.querySelectorAll('.price-edit-input').forEach(input => {
+        const id     = input.dataset.id;
+        const precio = parseInt(input.value);
+        if (!id || !precio || precio < 500) return;
+
+        nuevos[id] = precio;
+
+        // FIX: era 'PRODUCTS_DB' (typo) — corregido a 'PRODUCTOS_DB'
+        if (PRODUCTOS_DB[id]) PRODUCTOS_DB[id].precio = precio;
+        if (FORMATO_CONFIG[id]) FORMATO_CONFIG[id].unitPrice = precio;
+
+        // Actualizar el label visible con el precio nuevo
+        const span = document.getElementById(`price-label-${id}`);
+        if (span) span.innerText = `$${precio.toLocaleString('es-CO')}`;
+    });
+
+    // Combinar con precios ya guardados (no borrar los que no se tocaron ahora)
+    try {
+        const previos = JSON.parse(localStorage.getItem('licoclick_precios')) || {};
+        localStorage.setItem('licoclick_precios', JSON.stringify({ ...previos, ...nuevos }));
+    } catch { /* nada */ }
+}
+
+function actualizarLabelsPrecio() {
+    Object.keys(PRODUCTOS_DB).forEach(id => {
+        const el = document.getElementById(`price-label-${id}`);
+        if (el) el.innerText = `$${PRODUCTOS_DB[id].precio.toLocaleString('es-CO')}`;
+    });
+}
+
+// =================================================================
+// SESIÓN
+ /* Devuelve el objeto { id, nombre, rol } o null.
  */
 function obtenerSesion() {
     try {
@@ -162,6 +277,8 @@ function closeMenu() {
 // ENRUTADOR — se ejecuta cuando el DOM está completamente listo
 // =================================================================
 document.addEventListener('DOMContentLoaded', async () => {
+    // Cargar precios personalizados antes de renderizar cualquier página
+    cargarPreciosGuardados();
 
     // index.html
     if (document.getElementById('cart-container')) {
@@ -185,13 +302,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 // =================================================================
 function iniciarPaginaPOS() {
     const sesion = protegerPagina();
-    if (!sesion) return; // protegerPagina ya redirigió
+    if (!sesion) return;
 
     const elNombre = document.getElementById('active-user-name');
     const elRol    = document.getElementById('active-user-role');
     if (elNombre) elNombre.innerText = sesion.nombre;
     if (elRol)    elRol.innerText    = sesion.rol || 'Cajero';
 
+    actualizarLabelsPrecio();
     actualizarPantallaCarrito();
 }
 
@@ -594,6 +712,7 @@ async function iniciarPaginaFiados() {
     const elNombre = document.getElementById('header-user-name');
     if (elNombre) elNombre.innerText = sesion.nombre;
 
+    actualizarLabelsPrecio();
     await renderizarListaFiados();
 }
 

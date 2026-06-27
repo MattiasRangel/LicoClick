@@ -227,11 +227,16 @@
                 </div>
 
                 <!-- Amper -->
-                <div class="product-card">
+                <div class="product-card" id="card-amper">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('amper','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('amper','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('amper','tray',this)">24</button>
+                    </div>
                     <button class="product-main-btn" onclick="addProductFromCard('amper')">
                         <div class="img-container"><img src="imagenes/amper.png" alt="Amper" onerror="this.parentNode.innerHTML='⚡'"></div>
                         <span class="product-title">Amper</span>
-                        <span class="product-price">$4.000</span>
+                        <span class="product-price" id="price-label-amper">$4.000</span>
                     </button>
                     <div class="stepper-control">
                         <button class="btn-step" onclick="stepProductCardQty('amper', -1)">−</button>
@@ -241,11 +246,16 @@
                 </div>
 
                 <!-- Bretaña -->
-                <div class="product-card">
+                <div class="product-card" id="card-bretana">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('bretana','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('bretana','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('bretana','tray',this)">24</button>
+                    </div>
                     <button class="product-main-btn" onclick="addProductFromCard('bretana')">
                         <div class="img-container"><img src="imagenes/bretaña.png" alt="Bretaña" onerror="this.parentNode.innerHTML='🍺'"></div>
                         <span class="product-title">Bretaña</span>
-                        <span class="product-price">$3.500</span>
+                        <span class="product-price" id="price-label-bretana">$3.500</span>
                     </button>
                     <div class="stepper-control">
                         <button class="btn-step" onclick="stepProductCardQty('bretana', -1)">−</button>
@@ -274,11 +284,16 @@
                 </div>
 
                 <!-- Lata Cola y Pola -->
-                <div class="product-card card-cola-pola">
+                <div class="product-card card-cola-pola" id="card-lata_cola_pola">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('lata_cola_pola','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('lata_cola_pola','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('lata_cola_pola','tray',this)">24</button>
+                    </div>
                     <button class="product-main-btn" onclick="addProductFromCard('lata_cola_pola')">
                         <div class="img-container"><img src="imagenes/colaypola.png" alt="Cola y Pola" onerror="this.parentNode.innerHTML='🥤'"></div>
                         <span class="product-title">Lata Cola y Pola</span>
-                        <span class="product-price">$4.000</span>
+                        <span class="product-price" id="price-label-lata_cola_pola">$4.000</span>
                     </button>
                     <div class="stepper-control">
                         <button class="btn-step" onclick="stepProductCardQty('lata_cola_pola', -1)">−</button>
@@ -349,11 +364,16 @@
                 </div>
 
                 <!-- Sporade -->
-                <div class="product-card">
+                <div class="product-card" id="card-sporade">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('sporade','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('sporade','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('sporade','tray',this)">24</button>
+                    </div>
                     <button class="product-main-btn" onclick="addProductFromCard('sporade')">
                         <div class="img-container"><img src="imagenes/sporade.png" alt="Sporade" onerror="this.parentNode.innerHTML='🥤'"></div>
                         <span class="product-title">Sporade</span>
-                        <span class="product-price">$3.500</span>
+                        <span class="product-price" id="price-label-sporade">$3.500</span>
                     </button>
                     <div class="stepper-control">
                         <button class="btn-step" onclick="stepProductCardQty('sporade', -1)">−</button>
@@ -363,11 +383,16 @@
                 </div>
 
                 <!-- Vive100 -->
-                <div class="product-card">
+                <div class="product-card" id="card-vive100">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('vive100','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('vive100','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('vive100','tray',this)">24</button>
+                    </div>
                     <button class="product-main-btn" onclick="addProductFromCard('vive100')">
                         <div class="img-container"><img src="imagenes/vive100.png" alt="Vive100" onerror="this.parentNode.innerHTML='⚡'"></div>
                         <span class="product-title">Vive100</span>
-                        <span class="product-price">$4.000</span>
+                        <span class="product-price" id="price-label-vive100">$4.000</span>
                     </button>
                     <div class="stepper-control">
                         <button class="btn-step" onclick="stepProductCardQty('vive100', -1)">−</button>
@@ -397,6 +422,11 @@
 
                 <!-- Costeña Lata -->
                 <div class="product-card card-costena" id="card-costeña_lata">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('costeña_lata','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('costeña_lata','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('costeña_lata','tray',this)">24</button>
+                    </div>
                     <button class="product-main-btn" onclick="addProductFromCard('costeña_lata')">
                         <div class="img-container"><img src="imagenes/costeñita.png" alt="Costeña Lata" onerror="this.parentNode.innerHTML='🥫'"></div>
                         <span class="product-title">Costeña Lata</span>
@@ -411,6 +441,11 @@
 
                 <!-- Reds Lata -->
                 <div class="product-card" id="card-reds_lata">
+                    <div class="fmt-tabs">
+                        <button class="fmt-tab active" onclick="setFmt('reds_lata','unit',this)">Und</button>
+                        <button class="fmt-tab" onclick="setFmt('reds_lata','six',this)">6</button>
+                        <button class="fmt-tab" onclick="setFmt('reds_lata','tray',this)">24</button>
+                    </div>
                     <button class="product-main-btn" onclick="addProductFromCard('reds_lata')">
                         <div class="img-container"><img src="imagenes/reds.png" alt="Reds Lata" onerror="this.parentNode.innerHTML='🥫'"></div>
                         <span class="product-title">Reds Lata</span>

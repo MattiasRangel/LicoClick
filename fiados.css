@@ -316,16 +316,38 @@ input[type="number"]::-webkit-inner-spin-button {
     overflow: hidden;
 }
 
+/* =============================================
+   LAYOUT PRINCIPAL FIADOS — Mobile-first
+   ============================================= */
+.fiados-page {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+#panel-lista {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
 #lista-fiados {
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
+    overflow-y: scroll; /* scroll en lugar de auto — fuerza scroll en iOS/Android */
     -webkit-overflow-scrolling: touch;
-    /* CRÍTICO: NO usar display:flex aquí — en Android rompe el scroll */
-    /* display:block deja que cada .fiado-card ocupe su altura natural */
     display: block;
-    padding: 10px 14px 32px;
-}.fiados-header-bar {
+    padding: 10px 14px 40px;
+    /* Forzar que el navegador reconozca el área scrollable */
+    will-change: scroll-position;
+}
+
+.fiados-header-bar {
     padding: 14px 16px 10px;
     display: flex;
     align-items: center;
@@ -1758,6 +1780,50 @@ input[type="number"]::-webkit-inner-spin-button {
     outline: none;
     -moz-appearance: textfield;
     margin-top: 2px;
+}
+.price-edit-input::-webkit-outer-spin-button,
+.price-edit-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+/* =========================================
+   BOTÓN EDITAR PRECIOS (fiados)
+   ========================================= */
+.btn-edit-prices {
+    background: var(--bg-card-2);
+    border: 1.5px solid var(--border-light);
+    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    font-size: 17px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.btn-edit-prices:active { transform: scale(0.9); }
+.btn-edit-prices.active {
+    background: rgba(255, 209, 71, 0.15);
+    border-color: #ffd147;
+    box-shadow: 0 0 10px rgba(255,209,71,0.25);
+}
+
+.price-edit-input {
+    width: calc(100% - 4px);
+    margin: 0 2px 3px;
+    background: rgba(255, 209, 71, 0.12);
+    border: 1.5px solid #ffd147;
+    border-radius: 5px;
+    color: #ffd147;
+    font-size: 11px;
+    font-weight: 800;
+    font-family: 'DM Sans', sans-serif;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    padding: 4px 2px;
+    outline: none;
+    display: block;
+    -moz-appearance: textfield;
 }
 .price-edit-input::-webkit-outer-spin-button,
 .price-edit-input::-webkit-inner-spin-button { -webkit-appearance: none; }
