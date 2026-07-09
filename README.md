@@ -20,6 +20,15 @@ Este proyecto está construido utilizando tecnologías estándar de la web y ser
 *   **Control de Versiones:** Git & GitHub.
 *   **Almacenamiento Local:** Uso de `localStorage` para el manejo de sesiones de usuario y estados temporales de turno.
 
+
+## 📱 Capturas de Pantalla de la Aplicación
+
+![Interfaz de inicio de sesion - Captura 1](captura2.jpg)
+
+![Gestión del sistema - Captura 2](captura3.jpg)
+
+![Resumen y operaciones - Captura 3](captura4.jpg)
+
 ## Estructura del Proyecto
 
 El flujo de la aplicación se divide principalmente en:
