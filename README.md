@@ -25,7 +25,7 @@ Este proyecto está construido utilizando tecnologías estándar de la web y ser
 
 ![Interfaz de inicio de sesion - Captura 1](captura4.jpg)
 
-![Gestión del sistema - Captura 2](captura 2.jpg)
+![Gestión del sistema - Captura 2](captura_2.jpg)
 
 ![Resumen y operaciones - Captura 3](captura3.jpg)
 
