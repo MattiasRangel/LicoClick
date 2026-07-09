@@ -23,11 +23,11 @@ Este proyecto está construido utilizando tecnologías estándar de la web y ser
 
 ## 📱 Capturas de Pantalla de la Aplicación
 
-![Interfaz de inicio de sesion - Captura 1](captura2.jpg)
+![Interfaz de inicio de sesion - Captura 1](captura4.jpg)
 
-![Gestión del sistema - Captura 2](captura3.jpg)
+![Gestión del sistema - Captura 2](captura 2.jpg)
 
-![Resumen y operaciones - Captura 3](captura4.jpg)
+![Resumen y operaciones - Captura 3](captura3.jpg)
 
 ## Estructura del Proyecto
 
