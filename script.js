@@ -1,20 +1,9 @@
-// =================================================================
-// LICO-CLICK — script.js v6.0
-// Supabase Cloud Edition · Bug de sesión corregido
-// =================================================================
+// LicoClick: ventas, fiados y cuadre de caja
 
-// ---- CONFIGURACIÓN SUPABASE ----
+// CONFIGURACIÓN SUPABASE
 const SUPABASE_URL = "https://zdmlzhncujjmzmysktsq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkbWx6aG5jdWpqbXpteXNrdHNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MzI2MTAsImV4cCI6MjA5NjEwODYxMH0.2x6zIoTGx_nfsSdMY6rkduqx2_Es9jBa_jF9DVGCgvA";
 
-// ----------------------------------------------------------------
-// FIX CRÍTICO: NO inicializar db en el nivel raíz del script.
-// Si el CDN de Supabase tarda un milisegundo más de lo esperado,
-// "window.supabase" es undefined aquí y el script entero aborta,
-// haciendo que protegerPagina() nunca llegue a ejecutarse.
-// En su lugar usamos un getter lazy que se llama solo cuando se
-// necesita hacer una petición real, garantizando que el SDK ya esté cargado.
-// ----------------------------------------------------------------
 let _db = null;
 function getDb() {
     if (!_db) {
@@ -26,7 +15,7 @@ function getDb() {
     return _db;
 }
 
-// ---- CATÁLOGO LOCAL DE PRODUCTOS ----
+// CATÁLOGO LOCAL DE PRODUCTOS
 const PRODUCTOS_DB = {
     agua_botella:         { nombre: 'Botella de Agua',      precio: 2000  },
     agua_gas:             { nombre: 'Agua con Gas',          precio: 3000  },
@@ -43,7 +32,7 @@ const PRODUCTOS_DB = {
     lata_cola_pola:       { nombre: 'Lata Cola y Pola',      precio: 4000  },
     coronita:             { nombre: 'Coronita',              precio: 4000  },
     costena_botella:      { nombre: 'Costeña Botella',       precio: 5000  },
-    costeña_lata:         { nombre: 'Costeña Lata',          precio: 35000 },
+    costeña_lata:         { nombre: 'Costeña Lata',          precio: 3500  },
     reds_lata:         { nombre: 'Reds Lata',          precio: 4000 },
     media_ron:            { nombre: 'Media de Ron',          precio: 35000 },
     ron_750:              { nombre: 'Ron 750',          precio: 35000 },
@@ -51,8 +40,6 @@ const PRODUCTOS_DB = {
     media_amarillo:             { nombre: 'Media de Amarillo',          precio: 35000 },
     media_amarillo_750:         { nombre: 'Media de Amarillo 750',          precio: 35000 },
     media_verde:          { nombre: 'Media verde',          precio: 35000 },
-    media_verde:          { nombre: 'Media verde',          precio: 35000 },
-
 
     hydrolate:            { nombre: 'Hydrolate',          precio: 35000 },
     sporade:              { nombre: 'Sporade',               precio: 3500  },
@@ -60,11 +47,6 @@ const PRODUCTOS_DB = {
     budweiser_lata:       { nombre: 'Budweiser Lata',        precio: 3500  }
 };
 
-// =================================================================
-// FORMATO DE VENTA POR PRODUCTO
-// Productos con latas: 'unit' | 'six' (×6) | 'tray' (×24)
-// Productos con botella: 'unit' | 'half' (×7) | 'box' (×13)
-// =================================================================
 const FORMATO_CONFIG = {
     // Latas (sixpack=6 / bandeja=24)
     aguilita:           { type:'can', unitPrice:3000 },
@@ -80,14 +62,12 @@ const FORMATO_CONFIG = {
     sporade:            { type:'can', unitPrice:3500 },
     vive100:            { type:'can', unitPrice:4000 },
     reds_lata:          { type:'can', unitPrice:4000 },
-    'costeña_lata':     { type:'can', unitPrice:35000 },
+    'costeña_lata':     { type:'can', unitPrice:3500 },
     // Botellas (media caja=7 / caja=13)
     aguila_botella:     { type:'bottle', unitPrice:7000 },
     poker_1000:         { type:'bottle', unitPrice:7000 },
 };
 
-// Estado activo de formato por producto
-// { idProducto: { mode:'unit'|'six'|'tray'|'half'|'box', customPrice: number|null } }
 const fmtEstado = {};
 
 // Retiro de caja pendiente para confirmar en modal
@@ -95,13 +75,6 @@ let _sacarCajaPendiente = { monto: 0, motivo: '' };
 
 // Formato actual que se está configurando en el modal
 let _fmtPendiente = { id: null, mode: null };
-// =================================================================
-
-// =================================================================
-// SISTEMA DE EDICIÓN DE PRECIOS
-// Guardado en localStorage con clave 'licoclick_precios'.
-// Se carga al arrancar y sincroniza PRODUCTOS_DB + FORMATO_CONFIG.
-// =================================================================
 
 function cargarPreciosGuardados() {
     try {
@@ -114,7 +87,7 @@ function cargarPreciosGuardados() {
                 FORMATO_CONFIG[id].unitPrice = guardados[id];
             }
         });
-    } catch { /* nada */ }
+    } catch { }
 }
 
 let _modoEdicionActivo = false;
@@ -136,15 +109,12 @@ function toggleModoEdicion() {
 }
 
 function mostrarInputsEdicion() {
-    // Primero limpiar cualquier input previo que pudiera haber quedado
-    // Esto evita el bug de "dos precios" si se activa dos veces
     ocultarInputsEdicion();
 
     Object.keys(PRODUCTOS_DB).forEach(id => {
         const span = document.getElementById(`price-label-${id}`);
         if (!span) return;
 
-        // Guardar precio actual en el span para restaurarlo al cancelar
         const precioActual = PRODUCTOS_DB[id].precio;
 
         const input = document.createElement('input');
@@ -156,7 +126,6 @@ function mostrarInputsEdicion() {
         input.className  = 'price-edit-input';
         input.dataset.id = id;
 
-        // CRÍTICO: evitar que el tap propague al botón de producto o modal de formato
         input.addEventListener('click',   e => e.stopPropagation());
         input.addEventListener('touchend', e => e.stopPropagation());
         input.addEventListener('pointerdown', e => e.stopPropagation());
@@ -183,7 +152,6 @@ function guardarYAplicarPrecios() {
 
         nuevos[id] = precio;
 
-        // FIX: era 'PRODUCTS_DB' (typo) — corregido a 'PRODUCTOS_DB'
         if (PRODUCTOS_DB[id]) PRODUCTOS_DB[id].precio = precio;
         if (FORMATO_CONFIG[id]) FORMATO_CONFIG[id].unitPrice = precio;
 
@@ -192,11 +160,10 @@ function guardarYAplicarPrecios() {
         if (span) span.innerText = `$${precio.toLocaleString('es-CO')}`;
     });
 
-    // Combinar con precios ya guardados (no borrar los que no se tocaron ahora)
     try {
         const previos = JSON.parse(localStorage.getItem('licoclick_precios')) || {};
         localStorage.setItem('licoclick_precios', JSON.stringify({ ...previos, ...nuevos }));
-    } catch { /* nada */ }
+    } catch { }
 }
 
 function actualizarLabelsPrecio() {
@@ -206,10 +173,6 @@ function actualizarLabelsPrecio() {
     });
 }
 
-// =================================================================
-// SESIÓN
- /* Devuelve el objeto { id, nombre, rol } o null.
- */
 function obtenerSesion() {
     try {
         const raw = localStorage.getItem('licoclick_sesion');
@@ -223,14 +186,6 @@ function obtenerSesion() {
     }
 }
 
-/**
- * FIX: protegerPagina() es SÍNCRONA y pura.
- * Lee localStorage de forma directa — sin async, sin Supabase, sin timers.
- * localStorage.getItem() es 100% síncrono en todos los navegadores;
- * no hay condición de carrera posible aquí.
- * Si la sesión no existe o es inválida → redirige y devuelve null.
- * Si es válida → devuelve el objeto de sesión.
- */
 function protegerPagina() {
     const sesion = obtenerSesion();
     if (!sesion) {
@@ -243,9 +198,7 @@ function protegerPagina() {
     return sesion;
 }
 
-// =================================================================
 // CARRITO (estado en memoria, caché en localStorage)
-// =================================================================
 let carrito = {};
 try {
     carrito = JSON.parse(localStorage.getItem('licoclick_carrito')) || {};
@@ -255,9 +208,7 @@ function guardarCarrito() {
     localStorage.setItem('licoclick_carrito', JSON.stringify(carrito));
 }
 
-// =================================================================
 // MENÚ HAMBURGUESA
-// =================================================================
 function toggleMenu() {
     const panel   = document.getElementById('side-menu');
     const overlay = document.getElementById('menu-overlay');
@@ -273,33 +224,25 @@ function closeMenu() {
     if (overlay) overlay.classList.remove('open');
 }
 
-// =================================================================
-// ENRUTADOR — se ejecuta cuando el DOM está completamente listo
-// =================================================================
+// ENRUTADOR
 document.addEventListener('DOMContentLoaded', async () => {
-    // Cargar precios personalizados antes de renderizar cualquier página
     cargarPreciosGuardados();
 
-    // index.html
     if (document.getElementById('cart-container')) {
         iniciarPaginaPOS();
         return;
     }
-    // fiados.html
     if (document.getElementById('lista-fiados')) {
         await iniciarPaginaFiados();
         return;
     }
-    // resumen.html
     if (document.getElementById('resumen-ventas-total')) {
         await iniciarPaginaResumen();
         return;
     }
 });
 
-// =================================================================
-// POS — index.html
-// =================================================================
+// POS
 function iniciarPaginaPOS() {
     const sesion = protegerPagina();
     if (!sesion) return;
@@ -313,7 +256,6 @@ function iniciarPaginaPOS() {
     actualizarPantallaCarrito();
 }
 
-// ---- Steppers ----
 function stepProductCardQty(idProducto, cambio) {
     const el = document.getElementById(`qty-${idProducto}`);
     if (!el) return;
@@ -325,7 +267,7 @@ function validateCardQty(input) {
     if (isNaN(v) || v < 1) input.value = 1;
 }
 
-// ---- Agregar al carrito (respeta formato activo) ----
+// Agregar al carrito (respeta formato activo)
 function addProductFromCard(idProducto) {
     const el       = document.getElementById(`qty-${idProducto}`);
     const cantidad = parseInt(el?.value) || 1;
@@ -351,7 +293,6 @@ function addProductFromCard(idProducto) {
                     : 'Caja';
         nombreFinal = `${PRODUCTOS_DB[idProducto].nombre} (${label})`;
 
-        // Precio: personalizado → precio por unidad × cantidad del paquete
         precioFinal = estado.customPrice != null
             ? estado.customPrice
             : defPrecio * qtdPaq;
@@ -361,7 +302,6 @@ function addProductFromCard(idProducto) {
     const clave = `${idProducto}_${estado?.mode || 'unit'}_${Date.now()}`;
 
     if (carrito[idProducto] && (!cfg || !estado || estado.mode === 'unit')) {
-        // Mismo producto en modo unidad → acumular
         carrito[idProducto].cantidad += cantidadReal;
     } else {
         carrito[clave] = {
@@ -392,9 +332,7 @@ function addCustomProduct() {
     actualizarPantallaCarrito();
 }
 
-// =================================================================
-// FORMATO DE VENTA — Tabs en las cards
-// =================================================================
+// FORMATO DE VENTA
 function setFmt(idProducto, mode, tabEl) {
     // Actualizar tabs activos visualmente
     const card = document.getElementById(`card-${idProducto}`);
@@ -496,9 +434,7 @@ function _actualizarLabelPrecio(idProducto) {
     labelEl.innerText = `$${precio.toLocaleString('es-CO')} ${tag}`;
 }
 
-// =================================================================
 // SACAR DINERO DE CAJA
-// =================================================================
 function abrirModalSacarCaja() {
     document.getElementById('input-sacar-monto').value  = '';
     document.getElementById('input-sacar-motivo').value = '';
@@ -522,11 +458,9 @@ async function confirmarSacarCaja() {
         return;
     }
 
-    // Deshabilitar el botón con el selector correcto (hay dos modal-btn-confirm posibles)
     const btnConfirmar = document.querySelector('#modal-sacar-caja .modal-btn-confirm');
     if (btnConfirmar) { btnConfirmar.disabled = true; btnConfirmar.innerHTML = '⏳ Guardando...'; }
 
-    // ── PASO 1: Guardar siempre en localStorage como respaldo inmediato ──
     const entrada = { monto, motivo, fecha: new Date().toISOString() };
     try {
         const retiros = JSON.parse(localStorage.getItem('licoclick_retiros') || '[]');
@@ -536,22 +470,15 @@ async function confirmarSacarCaja() {
         console.warn('No se pudo guardar en localStorage:', lsErr);
     }
 
-    // ── PASO 2: Intentar guardar en Supabase ──
-    // IMPORTANTE: Los nombres de columna deben coincidir EXACTAMENTE con tu tabla.
-    // Si el insert falla, el retiro ya quedó en localStorage para el cuadre del turno.
-    // Revisa la consola para ver el error exacto de Supabase.
     let guardadoEnNube = false;
     try {
         const db     = getDb();
         const sesion = obtenerSesion();
 
-        // Intentamos con los nombres de columna más comunes.
-        // Si sigue fallando, revisa el error en consola y ajusta los nombres aquí:
         const payload = {
             cajero_nombre: sesion?.nombre || 'Desconocido',
             monto:         monto,
             motivo:        motivo
-            // created_at se llena automáticamente por Supabase (columna default)
         };
 
         console.log('[retiros_caja] Intentando INSERT con payload:', payload);
@@ -559,7 +486,7 @@ async function confirmarSacarCaja() {
         const { data, error } = await db
             .from('retiros_caja')
             .insert(payload)
-            .select(); // .select() fuerza que Supabase devuelva la fila insertada → más info en el error
+            .select();
 
         if (error) {
             // LOG DETALLADO para diagnóstico
@@ -576,12 +503,10 @@ async function confirmarSacarCaja() {
         guardadoEnNube = true;
 
     } catch (err) {
-        // El retiro YA está en localStorage, así que el cuadre de caja funcionará.
-        // El toast informa al cajero del estado real.
         console.error('[retiros_caja] Fallo al guardar en Supabase (guardado en local como respaldo):', err);
     }
 
-    // ── PASO 3: Cerrar modal y notificar ──
+    // Cerrar modal y notificar
     cerrarModalSacarCaja();
     const toastMsg = guardadoEnNube
         ? `💸 $${monto.toLocaleString('es-CO')} registrado`
@@ -596,7 +521,7 @@ async function confirmarSacarCaja() {
     }
 }
 
-// ---- Renderizar carrito ----
+// Renderizar carrito
 function actualizarPantallaCarrito() {
     guardarCarrito();
     const container = document.getElementById('cart-container');
@@ -636,13 +561,11 @@ function actualizarPantallaCarrito() {
     container.scrollTop = container.scrollHeight;
 }
 
-
-// ---- Eliminar ítem del carrito POS ----
+// Eliminar ítem del carrito POS
 function deleteCartItem(id) {
     delete carrito[id];
     actualizarPantallaCarrito();
 }
-// ---- REGISTRAR VENTA → Supabase ----
 async function processCheckout() {
     const llaves = Object.keys(carrito);
     if (llaves.length === 0) { alert('No hay productos en el pedido.'); return; }
@@ -699,9 +622,7 @@ async function processCheckout() {
     }
 }
 
-// =================================================================
-// FIADOS — fiados.html
-// =================================================================
+// FIADOS
 let fiadoActivoId  = null;
 let carritoFiado   = {};
 
@@ -716,7 +637,7 @@ async function iniciarPaginaFiados() {
     await renderizarListaFiados();
 }
 
-// ---- Lista de fiados activos ----
+// Lista de fiados activos
 async function renderizarListaFiados() {
     const lista = document.getElementById('lista-fiados');
     if (!lista) return;
@@ -779,7 +700,7 @@ async function renderizarListaFiados() {
     }
 }
 
-// ---- Crear nuevo fiado ----
+// Crear nuevo fiado
 async function abrirNuevoFiado() {
     const input  = document.getElementById('input-nombre-fiado');
     const nombre = input?.value.trim();
@@ -808,7 +729,7 @@ async function abrirNuevoFiado() {
     }
 }
 
-// ---- Abrir panel de detalle ----
+// Abrir panel de detalle
 async function abrirFiado(id, nombreCliente) {
     fiadoActivoId = id;
     carritoFiado  = {};
@@ -833,7 +754,7 @@ function cerrarDetalleFiado() {
     renderizarListaFiados();
 }
 
-// ---- Mini-carrito temporal del fiado ----
+// Mini-carrito temporal del fiado
 function renderizarCarritoFiado() {
     const container = document.getElementById('fiado-carrito');
     if (!container) return;
@@ -987,8 +908,7 @@ async function addCustomToFiado() {
     }
 }
 
-
-// ---- Confirmar y guardar carrito en el fiado ----
+// Confirmar y guardar carrito en el fiado
 async function agregarCarritoAFiado() {
     if (!fiadoActivoId) return;
     const llaves = Object.keys(carritoFiado);
@@ -1043,7 +963,7 @@ async function agregarCarritoAFiado() {
     }
 }
 
-// ---- Ítems acumulados del fiado activo ----
+// Ítems acumulados del fiado activo
 async function renderizarItemsFiado() {
     const container = document.getElementById('fiado-items-acumulados');
     if (!container || !fiadoActivoId) return;
@@ -1101,7 +1021,7 @@ async function renderizarItemsFiado() {
     }
 }
 
-// ---- Eliminar ítem individual del fiado ----
+// Eliminar ítem individual del fiado
 async function eliminarItemFiado(itemId, subtotalItem) {
     try {
         const db = getDb();
@@ -1126,7 +1046,7 @@ async function eliminarItemFiado(itemId, subtotalItem) {
     }
 }
 
-// ---- Cobrar fiado ----
+// Cobrar fiado
 async function cobrarFiado(id, nombre, saldo) {
     if (!confirm(`¿Cobrar la cuenta de ${nombre} por $${Number(saldo).toLocaleString('es-CO')}?\n\nSe marcará como liquidada.`)) return;
 
@@ -1189,7 +1109,7 @@ function cobrarFiadoActivo() {
     cobrarFiado(fiadoActivoId, nombre, saldo);
 }
 
-// ---- Abono parcial ----
+// Abono parcial
 function abrirModalAbono() {
     if (!fiadoActivoId) return;
     const badgeTexto = document.getElementById('fiado-total-acumulado')?.innerText || '$0';
@@ -1277,7 +1197,7 @@ async function confirmarAbono() {
     }
 }
 
-// ---- Eliminar fiado completo ----
+// Eliminar fiado completo
 async function eliminarFiado(id, nombre) {
     if (!confirm(`¿Eliminar la cuenta de ${nombre}?\nSe borrarán todos sus productos.`)) return;
 
@@ -1293,16 +1213,14 @@ async function eliminarFiado(id, nombre) {
     }
 }
 
-// ---- Steppers fiados ----
+// Steppers fiados
 function stepFiadoQty(idProducto, cambio) {
     const el = document.getElementById(`fqty-${idProducto}`);
     if (!el) return;
     el.value = Math.max(1, (parseInt(el.value) || 1) + cambio);
 }
 
-// =================================================================
-// RESUMEN — resumen.html
-// =================================================================
+// RESUMEN
 async function iniciarPaginaResumen() {
     const sesion = protegerPagina();
     if (!sesion) return;
@@ -1316,8 +1234,6 @@ async function iniciarPaginaResumen() {
 
     await renderizarResumen();
 
-    // ---- Realtime: actualizar automáticamente cuando otra persona
-    //               registra ventas, retiros o cobra fiados ----
     try {
         const db = getDb();
         db.channel('resumen-multiusuario')
@@ -1339,13 +1255,6 @@ async function renderizarResumen() {
     try {
         const db = getDb();
 
-        // ================================================================
-        // 1. VENTAS EN CAJA — TODO el dinero real que entró:
-        //    - 'efectivo': ventas normales de mostrador
-        //    - 'cobro_fiado': fiados que el cliente pagó completo
-        //    - 'abono_fiado': pagos parciales de fiados
-        //    Lo que NO se incluye: los fiados ACTIVOS (están en tabla fiados)
-        // ================================================================
         const { data: ventasData, error: ventasErr } = await db
             .from('ventas')
             .select('id, total_venta, metodo_pago');
@@ -1358,16 +1267,12 @@ async function renderizarResumen() {
         const elVentasTotal = document.getElementById('resumen-ventas-total');
         if (elVentasTotal) elVentasTotal.innerText = `$${totalVentas.toLocaleString('es-CO')}`;
 
-        // ---- Detalle: TODOS los ítems vendidos en el turno (mostrador + fiados cobrados) ----
-        // Usamos todos los IDs de ventas — así aparecen tanto las ventas normales
-        // como los productos de fiados que se cobraron ([Fiado] Águila Botella, etc.)
         const listaVentas = document.getElementById('resumen-ventas-lista');
         const ventaIds    = todasVentas.map(v => v.id);
 
         if (ventaIds.length === 0) {
             if (listaVentas) listaVentas.innerHTML = '<div class="r-empty">Sin ventas registradas en este turno</div>';
         } else {
-            // Consulta por lotes de 50 IDs para evitar límite de Supabase con .in()
             const BATCH = 50;
             let todosItems = [];
             for (let i = 0; i < ventaIds.length; i += BATCH) {
@@ -1380,8 +1285,6 @@ async function renderizarResumen() {
                 todosItems = todosItems.concat(batchItems || []);
             }
 
-            // Limpiar el prefijo [Fiado] y [Abono] para mostrar el nombre limpio
-            // y agrupar correctamente (ej: "[Fiado] Águila Botella" + "Águila Botella" = mismo producto)
             const consolidado = {};
             todosItems.forEach(i => {
                 const nombreLimpio = i.producto_nombre
@@ -1414,9 +1317,7 @@ async function renderizarResumen() {
             }
         }
 
-        // ================================================================
-        // 2. RETIROS DE CAJA
-        // ================================================================
+        // RETIROS DE CAJA
         const { data: retirosData, error: retirosErr } = await db
             .from('retiros_caja')
             .select('monto, motivo, fecha')
@@ -1448,10 +1349,6 @@ async function renderizarResumen() {
             }
         }
 
-        // ================================================================
-        // 3. FIADOS ACTIVOS — informativo, NO se suma al total de caja
-        //    porque el dinero no ha entrado todavía
-        // ================================================================
         const { data: fiadosActivos, error: fiadosErr } = await db
             .from('fiados')
             .select('nombre_cliente, total_productos, total_abonado')
@@ -1484,11 +1381,6 @@ async function renderizarResumen() {
             }
         }
 
-        // ================================================================
-        // 4. GRAN TOTAL — solo lo que realmente entró a caja:
-        //    ventas de mostrador MENOS retiros.
-        //    Los fiados se muestran aparte como "pendiente por cobrar".
-        // ================================================================
         const granTotal   = totalVentas - totalRetiros;
         const elGranTotal = document.getElementById('resumen-gran-total');
         if (elGranTotal) elGranTotal.innerText = `$${Math.max(0, granTotal).toLocaleString('es-CO')}`;
@@ -1504,9 +1396,8 @@ async function renderizarResumen() {
     }
 }
 
-// ---- Cuadre de caja ----
+// Cuadre de caja
 function calcularCuadre() {
-    // Base esperada = lo que entró a caja real (ventas + cobros de fiado) - retiros
     const totalVentas  = window._resumenTotalVentas  || 0;
     const totalRetiros = window._resumenTotalRetiros || 0;
     const baseEsperada = totalVentas - totalRetiros;
@@ -1550,11 +1441,10 @@ async function _obtenerTotalRetiros() {
         return data.reduce((suma, item) => suma + (item.monto || 0), 0);
     } catch (err) {
         console.error("Error al obtener retiros de la nube:", err);
-        return 0; // Si falla, retorna 0 para no bloquear el sistema
+        return 0;
     }
 }
 
-// ---- Cierre de turno → guarda cierre, borra ventas/retiros, nuevo turno ----
 async function finalizarTurno() {
     const totalVentas    = window._resumenTotalVentas  || 0;
     const totalRetiros   = window._resumenTotalRetiros || 0;
@@ -1583,7 +1473,7 @@ async function finalizarTurno() {
     try {
         const db = getDb();
 
-        // 1. Guardar el cierre en cierres_caja
+        // Guardar el cierre en cierres_caja
         const { error: cierreErr } = await db.from('cierres_caja').insert({
             cajero_nombre:   sesion?.nombre || 'Desconocido',
             ventas_sistema:  totalVentas,
@@ -1592,13 +1482,12 @@ async function finalizarTurno() {
         });
         if (cierreErr) throw cierreErr;
 
-        // 2. Obtener IDs de todas las ventas del turno para borrar sus ítems
         const { data: ventasIds, error: idsErr } = await db
             .from('ventas')
             .select('id');
         if (idsErr) throw idsErr;
 
-        // 3. Borrar venta_items en lotes (evitar límite de Supabase)
+        // Borrar venta_items en lotes (evitar límite de Supabase)
         const ids = (ventasIds || []).map(v => v.id);
         const BATCH = 50;
         for (let i = 0; i < ids.length; i += BATCH) {
@@ -1610,21 +1499,21 @@ async function finalizarTurno() {
             if (viErr) throw viErr;
         }
 
-        // 4. Borrar todas las ventas del turno
+        // Borrar todas las ventas del turno
         const { error: ventasErr } = await db
             .from('ventas')
             .delete()
             .neq('id', 0); // neq(0) = borrar todas las filas
         if (ventasErr) throw ventasErr;
 
-        // 5. Borrar todos los retiros del turno
+        // Borrar todos los retiros del turno
         const { error: retirosErr } = await db
             .from('retiros_caja')
             .delete()
             .neq('id', 0);
         if (retirosErr) throw retirosErr;
 
-        // 6. Limpiar carrito local también
+        // Limpiar carrito local también
         localStorage.removeItem('licoclick_carrito');
 
         mostrarToast('✅ Turno cerrado · Nuevo turno iniciado');
@@ -1649,9 +1538,7 @@ async function finalizarTurno() {
     }
 }
 
-// =================================================================
 // UTILS COMPARTIDOS
-// =================================================================
 function mostrarToast(msg) {
     let t = document.getElementById('lc-toast');
     if (!t) {

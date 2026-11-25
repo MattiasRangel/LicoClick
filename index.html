@@ -14,7 +14,6 @@
     <!-- PANTALLA PRINCIPAL: TABLERO POS -->
     <div id="pos-screen">
 
-        <!-- Header -->
         <header class="main-header">
             <button class="btn-menu" onclick="toggleMenu()" aria-label="Menú">
                 <span></span><span></span><span></span>
@@ -31,7 +30,6 @@
             </button>
         </header>
 
-        <!-- Carrito -->
         <section class="cart-section">
             <div class="section-title">
                 <span class="section-dot"></span>
@@ -169,7 +167,6 @@
                     </div>
                 </div>
 
-                <!-- Aguilita -->
                 <div class="product-card card-aguila" id="card-aguilita">
                     <div class="fmt-tabs">
                         <button class="fmt-tab active" onclick="setFmt('aguilita','unit',this)">Und</button>
@@ -226,7 +223,6 @@
                     </div>
                 </div>
 
-                <!-- Amper -->
                 <div class="product-card" id="card-amper">
                     <div class="fmt-tabs">
                         <button class="fmt-tab active" onclick="setFmt('amper','unit',this)">Und</button>
@@ -245,7 +241,6 @@
                     </div>
                 </div>
 
-                <!-- Bretaña -->
                 <div class="product-card" id="card-bretana">
                     <div class="fmt-tabs">
                         <button class="fmt-tab active" onclick="setFmt('bretana','unit',this)">Und</button>
@@ -302,7 +297,6 @@
                     </div>
                 </div>
 
-                <!-- Coronita -->
                 <div class="product-card card-corona" id="card-coronita">
                     <div class="fmt-tabs">
                         <button class="fmt-tab active" onclick="setFmt('coronita','unit',this)">Und</button>
@@ -363,7 +357,6 @@
                     </div>
                 </div>
 
-                <!-- Sporade -->
                 <div class="product-card" id="card-sporade">
                     <div class="fmt-tabs">
                         <button class="fmt-tab active" onclick="setFmt('sporade','unit',this)">Und</button>
@@ -382,7 +375,6 @@
                     </div>
                 </div>
 
-                <!-- Vive100 -->
                 <div class="product-card" id="card-vive100">
                     <div class="fmt-tabs">
                         <button class="fmt-tab active" onclick="setFmt('vive100','unit',this)">Und</button>
@@ -514,7 +506,6 @@
                     </div>
                 </div>
 
-                <!-- Hydrolate -->
                 <div class="product-card" id="card-hydrolate">
                     <button class="product-main-btn" onclick="addProductFromCard('hydrolate')">
                         <div class="img-container"><img src="imagenes/hydrolate.png" alt="Hydrolate" onerror="this.parentNode.innerHTML='💧'"></div>
@@ -577,7 +568,6 @@
         </div>
     </div>
 
-    <!-- MODAL: FORMATO DE VENTA (sixpack / bandeja / media caja / caja) -->
     <div id="modal-formato" class="modal-overlay" onclick="if(event.target===this)cerrarModalFormato()">
         <div class="modal-box">
             <div class="modal-header">
@@ -600,10 +590,6 @@
         </div>
     </div>
 
-<!-- =====================================================
-     MENÚ LATERAL — FUERA de #pos-screen para que el
-     z-index funcione correctamente en móvil
-     ===================================================== -->
 <div class="menu-overlay" id="menu-overlay" onclick="closeMenu()"></div>
 <nav class="side-menu" id="side-menu">
     <div class="side-menu-brand">

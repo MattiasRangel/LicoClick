@@ -48,9 +48,6 @@
     </button>
 </header>
 
-<!-- ============================================================
-     PANEL LISTA — se muestra por defecto
-     ============================================================ -->
 <div id="panel-lista">
 
     <!-- Barra nueva cuenta -->
@@ -76,11 +73,7 @@
     <!-- Lista de fiados -->
     <div id="lista-fiados"></div>
 
-</div><!-- /panel-lista -->
-
-<!-- ============================================================
-     PANEL DETALLE — oculto, se activa al abrir un fiado
-     ============================================================ -->
+</div>
 <div id="panel-detalle">
 
     <!-- Sub-header detalle -->
@@ -116,7 +109,6 @@
             <div class="fiado-custom-card">
                 <label>✏️ Cobro / Producto manual</label>
 
-                <!-- Nombre -->
                 <div class="custom-name-wrap">
                     <span>📝</span>
                     <input type="text" id="fiado-custom-name" placeholder="Descripción del producto...">
@@ -251,9 +243,7 @@
                     </div>
                 </div>
 
-                <!-- Aguilita -->
                 <div class="fiado-product-card card-aguila" id="card-aguilita">
-
 
                     <div class="fmt-tabs">
                         <button class="fmt-tab active" onclick="setFmt('aguilita','unit',this)">Und</button>
@@ -315,7 +305,6 @@
                     </div>
                 </div>
 
-                <!-- Amper -->
                 <div class="fiado-product-card">
                     <button class="fiado-prod-btn" onclick="addProductToFiado('amper')">
                         <div class="fiado-prod-img"><img src="imagenes/amper.png" alt="Amper" onerror="this.parentNode.innerHTML='⚡'"></div>
@@ -329,7 +318,6 @@
                     </div>
                 </div>
 
-                <!-- Bretaña -->
                 <div class="fiado-product-card">
                     <button class="fiado-prod-btn" onclick="addProductToFiado('bretana')">
                         <div class="fiado-prod-img"><img src="imagenes/bretaña.png" alt="Bretaña" onerror="this.parentNode.innerHTML='🍺'"></div>
@@ -378,7 +366,6 @@
                     </div>
                 </div>
 
-                <!-- Coronita -->
                 <div class="fiado-product-card card-corona" id="card-coronita">
 
                     <div class="fmt-tabs">
@@ -399,7 +386,6 @@
                     </div>
                 </div>
 
-                <!-- Costeña -->
                 <div class="fiado-product-card card-costena">
                     <button class="fiado-prod-btn" onclick="addProductToFiado('costena_botella')">
                         <div class="fiado-prod-img"><img src="imagenes/costeña.png" alt="Costeña" onerror="this.parentNode.innerHTML='🍺'"></div>
@@ -427,7 +413,6 @@
                     </div>
                 </div>
 
-                <!-- Sporade -->
                 <div class="fiado-product-card">
                     <button class="fiado-prod-btn" onclick="addProductToFiado('sporade')">
                         <div class="fiado-prod-img"><img src="imagenes/sporade.png" alt="Sporade" onerror="this.parentNode.innerHTML='🥤'"></div>
@@ -441,7 +426,6 @@
                     </div>
                 </div>
 
-                <!-- Vive100 -->
                 <div class="fiado-product-card">
                     <button class="fiado-prod-btn" onclick="addProductToFiado('vive100')">
                         <div class="fiado-prod-img"><img src="imagenes/vive100.png" alt="Vive100" onerror="this.parentNode.innerHTML='⚡'"></div>
@@ -455,7 +439,6 @@
                     </div>
                 </div>
 
-                <!-- Budweiser -->
                 <div class="fiado-product-card card-bud" id="card-budweiser_lata">
 
                     <div class="fmt-tabs">
@@ -574,7 +557,6 @@
                     </div>
                 </div>
 
-                <!-- Hydrolate -->
                 <div class="fiado-product-card">
                     <button class="fiado-prod-btn" onclick="addProductToFiado('hydrolate')">
                         <div class="fiado-prod-img"><img src="imagenes/hydrolate.png" alt="Hydrolate" onerror="this.parentNode.innerHTML='💧'"></div>
@@ -588,11 +570,7 @@
                     </div>
                 </div>
 
-            </div><!-- /fiado-grid -->
-        </div><!-- /zona-agregar -->
-    </div><!-- /detalle-body -->
-</div><!-- /panel-detalle -->
-
+            </div>        </div>    </div></div>
 <!-- MODAL: ABONO PARCIAL -->
 <div id="modal-abono" class="modal-overlay" onclick="if(event.target===this)cerrarModalAbono()">
     <div class="modal-box">
@@ -615,7 +593,6 @@
         </div>
     </div>
 </div>
-
 
 <div id="modal-formato" class="modal-overlay" onclick="if(event.target===this)cerrarModalFormato()">
         <div class="modal-box">

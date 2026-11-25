@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Style.css">
-    <!-- SDK de Supabase — necesario solo para autenticar contra la tabla usuarios -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="login-page">
@@ -61,7 +60,7 @@
     </div>
 
     <script>
-        // ---- Supabase solo para consultar la tabla usuarios ----
+        // Supabase solo para consultar la tabla usuarios
         const SUPABASE_URL = "https://zdmlzhncujjmzmysktsq.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpkbWx6aG5jdWpqbXpteXNrdHNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MzI2MTAsImV4cCI6MjA5NjEwODYxMH0.2x6zIoTGx_nfsSdMY6rkduqx2_Es9jBa_jF9DVGCgvA";
         const dbLogin = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -73,7 +72,7 @@
                 if (sesion && sesion.nombre) {
                     window.location.replace('index.html');
                 }
-            } catch { /* localStorage corrupto — ignorar y mostrar login */ }
+            } catch { }
         })();
 
         async function handleLogin(event) {
@@ -105,16 +104,12 @@
                 if (data && data.length > 0) {
                     const usuario = data[0];
 
-                    // ÚNICO lugar donde se escribe la sesión.
-                    // script.js la lee con localStorage.getItem('licoclick_sesion').
                     localStorage.setItem('licoclick_sesion', JSON.stringify({
                         id:     usuario.id,
                         nombre: usuario.nombre_mostrar,
                         rol:    usuario.rol
                     }));
 
-                    // Navegar al POS — replace() para que el botón Atrás
-                    // del celular no vuelva al login con sesión ya activa.
                     window.location.replace('index.html');
 
                 } else {

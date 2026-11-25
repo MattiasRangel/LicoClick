@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 
-/*=============================================LICO-CLICK — fiados.css v2.1 Estilos ajustados de tipografía y Responsive=============================================*/ @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 
 :root {
     --green: #00c48c;
@@ -46,7 +46,7 @@ body {
     background: var(--bg-base);
     color: var(--text-white);
     overflow-x: hidden;
-    /* No poner height aquí — .fiados-page maneja su propia altura */
+    /* No poner height aquí */
 }
 
 html {
@@ -294,15 +294,10 @@ input[type="number"]::-webkit-inner-spin-button {
     border-color: var(--red) !important;
 }
 
-/* =============================================
-   LAYOUT PRINCIPAL FIADOS — Mobile-first
-   Usar dvh directamente en .fiados-page es más
-   fiable en Android/iOS que heredar de body
-   ============================================= */
 .fiados-page {
     display: flex;
     flex-direction: column;
-    height: 100dvh;  /* dynamic viewport height: respeta barra del navegador */
+    height: 100dvh;
     height: 100vh;   /* fallback para navegadores sin dvh */
     overflow: hidden;
     position: relative;
@@ -312,13 +307,11 @@ input[type="number"]::-webkit-inner-spin-button {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-height: 0; /* FIX CRÍTICO: sin esto flex-child no respeta overflow en iOS/Android */
+    min-height: 0;
     overflow: hidden;
 }
 
-/* =============================================
-   LAYOUT PRINCIPAL FIADOS — Mobile-first
-   ============================================= */
+/* LAYOUT PRINCIPAL FIADOS */
 .fiados-page {
     display: flex;
     flex-direction: column;
@@ -339,7 +332,7 @@ input[type="number"]::-webkit-inner-spin-button {
 #lista-fiados {
     flex: 1;
     min-height: 0;
-    overflow-y: scroll; /* scroll en lugar de auto — fuerza scroll en iOS/Android */
+    overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
     display: block;
     padding: 10px 14px 40px;
@@ -462,9 +455,8 @@ input[type="number"]::-webkit-inner-spin-button {
     border-radius: var(--radius-card);
     overflow: hidden;
     box-shadow: var(--shadow-card);
-    /* margin en lugar de gap para que Android calcule bien la altura */
     margin-bottom: 10px;
-    /* Sin animación — rompe el cálculo de altura en Android */
+    /* Sin animación */
 }
 
 @keyframes itemIn {
@@ -546,7 +538,7 @@ input[type="number"]::-webkit-inner-spin-button {
     padding: 3px 8px;
     border-radius: 18px;
     white-space: nowrap;
-    flex-shrink: 0;  /* NUNCA se encoge — siempre visible */
+    flex-shrink: 0;
 }
 
 .fiado-card-actions {
@@ -604,10 +596,10 @@ input[type="number"]::-webkit-inner-spin-button {
     display: none;
     flex-direction: column;
     flex: 1;
-    min-height: 0; /* FIX CRÍTICO para móvil */
+    min-height: 0;
     overflow: hidden;
     height: calc(100dvh - 54px);
-    height: calc(100vh - 54px); /* fallback */
+    height: calc(100vh - 54px);
 }
 
 .detalle-body {
@@ -707,7 +699,7 @@ input[type="number"]::-webkit-inner-spin-button {
     filter: brightness(0.87);
 }
 
-/* zona-agregar y detalle-body definidos junto a #panel-detalle arriba */.cuenta-acumulada {
+.cuenta-acumulada {
     flex: 0 0 auto;
     border-bottom: 2px solid var(--border-light);
     background: var(--bg-card);
@@ -938,7 +930,6 @@ input[type="number"]::-webkit-inner-spin-button {
     align-items: stretch;
 }
 
-/* Precio */
 .fiado-custom-card .price-wrap {
     display: flex;
     align-items: center;
@@ -1215,9 +1206,6 @@ input[type="number"]::-webkit-inner-spin-button {
     font-variant-numeric: tabular-nums;
 }
 
-/* =============================================
-   RESUMEN.HTML
-   ============================================= */
 .resumen-page {
     padding-bottom: 40px;
     min-height: 100vh;
@@ -1534,9 +1522,7 @@ input[type="number"]::-webkit-inner-spin-button {
     font-style: italic;
 }
 
-/* =========================================
-   MEDIA QUERIES PARA CELULARES PEQUEÑOS
-   ========================================= */
+/* MEDIA QUERIES PARA CELULARES PEQUEÑOS */
 @media (max-width: 390px) {
     .fiado-grid {
         grid-template-columns: 1fr 1fr;
@@ -1562,9 +1548,7 @@ input[type="number"]::-webkit-inner-spin-button {
         font-size: 32px;
     }
 }
-/* =========================================
-   BOTÓN ABONO — header detalle fiado
-   ========================================= */
+/* BOTÓN ABONO */
 .btn-abono-header {
     background: rgba(255,179,71,0.12);
     border: 1px solid rgba(255,179,71,0.28);
@@ -1580,9 +1564,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 .btn-abono-header:active { transform:scale(0.93); background:rgba(255,179,71,0.22); }
 
-/* =========================================
-   MODAL GENÉRICO — reutilizado en fiados.html
-   ========================================= */
+/* MODAL GENÉRICO */
 .modal-overlay {
     display: none;
     position: fixed; inset: 0;
@@ -1666,9 +1648,7 @@ input[type="number"]::-webkit-inner-spin-button {
     transition:transform 0.1s, filter 0.1s;
 }
 .modal-btn-confirm:active { transform:scale(0.96); filter:brightness(0.88); }
-/* =========================================
-   FMT-TABS DENTRO DE FIADO-PRODUCT-CARD
-   ========================================= */
+/* FMT-TABS DENTRO DE FIADO-PRODUCT-CARD */
 .fiado-product-card .fmt-tabs {
     display: flex;
     border-bottom: 1px solid var(--border);
@@ -1722,9 +1702,7 @@ input[type="number"]::-webkit-inner-spin-button {
     cursor: wait;
 }
 
-/* =========================================
-   BARRA DE ESTADO GUARDADO DIRECTO
-   ========================================= */
+/* BARRA DE ESTADO GUARDADO DIRECTO */
 .fiado-save-status {
     display: flex;
     align-items: center;
@@ -1746,9 +1724,7 @@ input[type="number"]::-webkit-inner-spin-button {
     color: var(--text-dim);
     line-height: 1.3;
 }
-/* =========================================
-   BOTÓN EDITAR PRECIOS — header fiados
-   ========================================= */
+/* BOTÓN EDITAR PRECIOS */
 .btn-edit-prices {
     background: var(--bg-card-2);
     border: 1px solid var(--border-light);
@@ -1783,9 +1759,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 .price-edit-input::-webkit-outer-spin-button,
 .price-edit-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-/* =========================================
-   BOTÓN EDITAR PRECIOS (fiados)
-   ========================================= */
+/* BOTÓN EDITAR PRECIOS (fiados) */
 .btn-edit-prices {
     background: var(--bg-card-2);
     border: 1.5px solid var(--border-light);

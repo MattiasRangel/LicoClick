@@ -1,37 +1,73 @@
-# LicoClick - Sistema de Punto de Venta (POS)
+# LicoClick: sistema de punto de venta (POS) web
 
-**LicoClick** es una aplicación web de ventas, control de inventario y gestión de caja, diseñada específicamente para optimizar la operativa de negocios comerciales como licorerías. Su enfoque principal es ofrecer un control preciso sobre los turnos de trabajo, las finanzas diarias y las cuentas por cobrar, todo desde una interfaz optimizada tanto para computadoras de escritorio como para dispositivos móviles.
+Aplicación web para registrar ventas, controlar cuentas por cobrar (fiados) y cuadrar la caja por turno en un estanco.
 
-##Características Principales
+## Contexto
 
-*   **Gestión de Turnos Manuales:** Control absoluto sobre la apertura y cierre de caja. El sistema registra las operaciones por jornada de trabajo real, evitando descuadres por cambios de día a medianoche, ideal para negocios nocturnos.
-*   **Registro de Ventas en Tiempo Real:** Procesamiento de carrito de compras, cálculo de totales y almacenamiento en base de datos.
-*   **Módulo de Fiados (Cuentas por Cobrar):** Sistema integrado para registrar clientes con cuentas pendientes, agregarles productos a crédito, gestionar abonos parciales o totales y visualizar el saldo deudor actualizado.
-*   **Control de Retiros de Caja:** Registro de salidas de dinero o pagos a proveedores durante el turno, afectando directamente el cálculo del cuadro de caja final.
-*   **Cuadre de Caja Detallado:** Resumen automático al finalizar el turno que contrasta las ventas del sistema, los fiados, los retiros y el efectivo físico ingresado por el cajero, calculando diferencias exactas.
-*   **Diseño 100% Responsivo:** Interfaz adaptada para su uso fluido en teléfonos móviles, garantizando que el personal pueda operar el sistema desde cualquier dispositivo en el local.
+Trabajaba en un estanco donde las ventas y los fiados se llevaban a mano. Vi la necesidad y desarrollé LicoClick por iniciativa propia. Lo usé en la operación real del negocio para registrar las ventas y llevar la cuenta de los fiados.
 
-##Tecnologías Utilizadas
+> **Estado:** el proyecto ya no está en uso y la base de datos de producción fue eliminada. El código queda como portafolio.
 
-Este proyecto está construido utilizando tecnologías estándar de la web y servicios en la nube para garantizar rapidez y persistencia de datos:
+## Capturas
 
-*   **Frontend:** HTML5, CSS3, JavaScript (Vanilla).
-*   **Backend & Base de Datos (BaaS):** [Supabase](https://supabase.com/) (PostgreSQL).
-*   **Control de Versiones:** Git & GitHub.
-*   **Almacenamiento Local:** Uso de `localStorage` para el manejo de sesiones de usuario y estados temporales de turno.
+| Inicio de sesión | Punto de venta | Resumen del turno |
+|---|---|---|
+| ![Inicio de sesión](docs/capturas/login.jpg) | ![Punto de venta](docs/capturas/punto-de-venta.jpg) | ![Resumen del turno](docs/capturas/resumen-turno.jpg) |
 
+## Funcionalidades
 
-## 📱 Capturas de Pantalla de la Aplicación
+- **Punto de venta por botones:** catálogo de más de 25 productos con venta por unidad o por paquete y edición de precios.
+- **Turnos manuales:** apertura y cierre de caja por jornada real de trabajo, sin cortes a medianoche (ideal para negocios nocturnos).
+- **Fiados (cuentas por cobrar):** registro de clientes, productos a crédito, abonos parciales o totales y saldo actualizado.
+- **Retiros de caja:** salidas de dinero y pagos a proveedores que afectan el cuadre final.
+- **Cuadre de caja automático:** contrasta ventas, fiados, retiros y efectivo físico, y calcula la diferencia exacta.
+- **Diseño responsive:** pensado para operarse desde el celular.
 
-![Interfaz de inicio de sesion - Captura 1](captura4.jpg)
+## Tecnologías
 
-![Gestión del sistema - Captura 2](captura_2.jpg)
+- **Frontend:** HTML5, CSS3, JavaScript (vanilla)
+- **Backend y base de datos:** [Supabase](https://supabase.com/) (PostgreSQL) mediante su API REST
+- **Sesión local:** `localStorage`
+- **Control de versiones:** Git y GitHub
 
-![Resumen y operaciones - Captura 3](captura3.jpg)
+## Modelo de datos (Supabase / PostgreSQL)
 
-## Estructura del Proyecto
+| Tabla | Uso |
+|---|---|
+| `usuarios` | Personal que inicia turno (rol cajero o administrador) |
+| `ventas` / `venta_items` | Cabecera y detalle de cada venta |
+| `fiados` / `fiado_items` | Clientes con crédito y productos fiados |
+| `retiros_caja` | Salidas de dinero durante el turno |
+| `cierres_caja` | Resultado del cuadre de cada turno |
 
-El flujo de la aplicación se divide principalmente en:
-*   `index.html` / `login.html`: Autenticación y acceso del personal.
-*   `script.js`: Lógica principal de ventas, carrito y cuadre de caja.
-*   Funciones de base de datos conectadas a través de la API REST de Supabase para las tablas de: `ventas`, `venta_items`, `retiros_caja`, `fiados` y `cierres_caja`.
+## Estructura
+
+```
+login.html      Inicio de sesión del personal
+index.html      Punto de venta (catálogo y carrito)
+fiados.html     Gestión de cuentas por cobrar
+resumen.html    Resumen y cierre del turno
+script.js       Lógica de ventas, fiados, retiros y cuadre de caja
+Style.css       Estilos generales
+fiados.css      Estilos del módulo de fiados
+imagenes/       Imágenes de los productos
+```
+
+## Cómo ejecutarlo
+
+1. Crea un proyecto en Supabase con las tablas de arriba.
+2. Reemplaza `SUPABASE_URL` y `SUPABASE_KEY` en `script.js` y `login.html` por los de tu proyecto.
+3. Abre `login.html` con un servidor local (por ejemplo, la extensión Live Server de VS Code).
+
+## Limitaciones conocidas y próximas mejoras
+
+Las documento porque son lo primero que cambiaría en una versión 2:
+
+- **Autenticación:** el login compara usuario y contraseña directamente contra la tabla `usuarios`. Lo correcto es usar **Supabase Auth** (contraseñas cifradas y sesión con JWT) en lugar de una sesión guardada en `localStorage`.
+- **Seguridad de datos:** activar **Row Level Security (RLS)** en todas las tablas, con políticas por rol.
+- **Catálogo:** mover los productos y precios a una tabla para que los cambios se sincronicen entre dispositivos (hoy los precios editados se guardan solo en el navegador).
+- **Código:** dividir `script.js` en módulos (ventas, fiados, caja).
+
+## Autor
+
+Eduard Mattias Rangel Ramírez · [LinkedIn](https://www.linkedin.com/in/mattias-rangel-8abab0310) · [GitHub](https://github.com/MattiasRangel)
